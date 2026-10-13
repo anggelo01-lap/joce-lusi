@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# codigo-operadora
-=======
 # Operadora IA Platinum — integración de los 2 ZIP
 
 Esta versión conserva:
@@ -91,5 +88,4 @@ docker compose exec -T backend node tests/acceso.integration.js
 docker compose exec -T backend node tests/operaciones.integration.js
 ```
 
-El superadministrador puede editar nombres de empresas y eliminar empresas vac?as (excepto la original y la activa). En Cuentas y permisos puede editar nombre, correo, rol y contrase?a, activar, desactivar y eliminar cuentas de la empresa activa. Se conserva el ?ltimo administrador activo; las cuentas de superadministrador mantienen su protecci?n. Las eliminaciones requieren confirmaci?n en la pantalla.
->>>>>>> 639ae7c (actualización de la union de orion y backend)
+El superadministrador puede editar nombres de empresas y eliminar empresas vacías (excepto la original y la activa). En Cuentas y permisos puede editar nombre, correo, rol y contraseña, activar, desactivar y eliminar cuentas de la empresa activa. Se conserva el último administrador activo; las cuentas de superadministrador mantienen su protección. Las eliminaciones requieren confirmación en la pantalla.
