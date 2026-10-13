@@ -1,0 +1,16 @@
+[hidden]{display:none!important}
+.access-roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:24px 0}
+.access-role{padding:22px;border:1px solid #dfE8f2;border-radius:14px;background:#fff}
+.access-role h3{margin:10px 0;font-size:15px}.access-role p{margin:0;color:#697c91;font-size:12px;line-height:1.8}
+.access-role:first-child{background:#f0f7ff;border-color:#bcd8ff}
+.access-section{margin-top:24px}.access-section .card{padding:26px}
+.access-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.access-account-layout{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,2fr);gap:28px}
+.access-login label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:#4a6178}
+.access-login input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #cbd7e3;border-radius:9px;background:white;color:#182a3e;font:inherit}
+.access-login{display:flex;flex-direction:column;gap:16px}.access-login fieldset{border:1px solid #dfe8f2;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.access-login legend{font-size:12px;font-weight:700;padding:0 6px;color:#1e70eb}
+#accessMessage{padding:12px;border-radius:8px;background:#fff0f0;color:#a62d2d;font-size:13px;line-height:1.6;margin:14px 0}
+.login-wrapper:has(#setupForm:not([hidden])){padding-top:24px;padding-bottom:24px}.panel-right:has(#setupForm:not([hidden])){overflow-y:auto}
+@media(max-width:1000px){.access-account-layout{grid-template-columns:1fr}}
+@media(max-width:650px){.access-roles,.access-form-grid{grid-template-columns:1fr}.access-section .card{padding:20px}}

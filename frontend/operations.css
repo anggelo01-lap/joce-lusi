@@ -1,0 +1,128 @@
+:root{--navy:#071528;--cyan:#38bdf8;--ink:#182a3e;--muted:#697c91;--line:#e1e8ef;--green:#16826d;--bg:#f3f6fa;--font:'Plus Jakarta Sans',system-ui,sans-serif}
+:where(.operational-ui) a{color:inherit}
+:where(.operational-ui) button,:where(.operational-ui) input,:where(.operational-ui) select{font:inherit}
+:where(.operational-ui) button{cursor:pointer;background:#1e70eb;color:white;border:1px solid transparent;border-radius:9px;padding:11px 16px;font-weight:700;transition:background .15s}
+:where(.operational-ui) button:hover{background:#155ecb}
+:where(.operational-ui) button:disabled{opacity:.45;cursor:default}
+:where(.operational-ui) button.secondary{background:white;color:#34516b;border:1px solid var(--line)}
+:where(.operational-ui) button.secondary:hover{background:#edf5fa}
+:where(.operational-ui) .icon-button{background:transparent!important;color:inherit;border:0;padding:6px;font-size:24px}
+:where(.operational-ui) input,:where(.operational-ui) select{width:100%;min-width:0;border:1px solid #cbd7e3;border-radius:8px;padding:11px 12px;background:white;color:var(--ink)}
+:where(.operational-ui) input:read-only{background:#f3f6fa;color:var(--muted)}
+:where(.operational-ui) label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:#4a6178}
+:where(.operational-ui) button:focus-visible,:where(.operational-ui) a:focus-visible,:where(.operational-ui) input:focus-visible,:where(.operational-ui) select:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+:where(.operational-ui) h2,:where(.operational-ui) h3,:where(.operational-ui) p{margin-top:0}
+:where(.operational-ui) h2{font-size:18px;letter-spacing:-.4px;margin-bottom:12px}
+:where(.operational-ui) h3{font-size:15px}
+:where(.operational-ui) p{line-height:1.7}
+:where(.operational-ui) .muted{color:var(--muted);font-size:12px;line-height:1.7}
+:where(.operational-ui) .eyebrow{font-size:10px;font-weight:800;letter-spacing:1.6px;color:var(--muted);margin-bottom:8px}
+:where(.operational-ui) .tag,:where(.operational-ui) .status{display:inline-flex;align-items:center;white-space:nowrap;padding:5px 9px;border-radius:6px;background:#edf3f8;color:#55708a;font-size:10px;font-weight:800}
+:where(.operational-ui) .status-disponible,:where(.operational-ui) .status-completado,:where(.operational-ui) .status-operativo{background:#e4f6ef;color:#147863}
+:where(.operational-ui) .status-en_curso,:where(.operational-ui) .status-asignado,:where(.operational-ui) .status-configurado{background:#e6f3fb;color:#086c9d}
+:where(.operational-ui) .status-solicitado,:where(.operational-ui) .status-pendiente,:where(.operational-ui) .status-en_recojo{background:#fff3dc;color:#936522}
+:where(.operational-ui) .status-cancelado,:where(.operational-ui) .status-sin_conexión{background:#ffeded;color:#b14343}
+:where(.operational-ui) .card-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:20px}
+:where(.operational-ui) .card-heading h2{margin-bottom:0}
+:where(.operational-ui) .stack{display:flex;flex-direction:column;gap:16px}
+:where(.operational-ui) .summary-line{display:flex;justify-content:space-between;align-items:center;padding:0 0 15px;border-bottom:1px solid var(--line)}
+:where(.operational-ui) .summary-line strong{font-size:22px}
+:where(.operational-ui) .section-intro{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}
+:where(.operational-ui) .section-intro p{color:var(--muted);font-size:12px;margin:0}
+:where(.operational-ui) .section-intro h2{font-size:23px}
+:where(.operational-ui) .empty{padding:35px 18px;text-align:center;color:var(--muted);font-size:12px;line-height:1.8;border:1px dashed var(--line);border-radius:9px}
+:where(.operational-ui) .table-wrap{overflow:auto}
+:where(.operational-ui) table{border-collapse:collapse;width:100%;text-align:left;font-size:12px}
+:where(.operational-ui) th{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:1px;padding:14px 10px;background:#f6f9fb;white-space:nowrap}
+:where(.operational-ui) td{padding:17px 10px;border-bottom:1px solid #edf1f5;max-width:300px}
+:where(.operational-ui) td small{display:block;color:var(--muted);font-size:10px;margin-top:5px;line-height:1.5}
+:where(.operational-ui) td button{font-size:10px;padding:8px 10px}
+:where(.operational-ui) .filters{display:flex;gap:12px;margin-bottom:22px}
+:where(.operational-ui) .search-label{flex:1}
+:where(.operational-ui) .workflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+:where(.operational-ui) .workflow-lane{background:#e9eff5;border-radius:12px;padding:16px;min-height:180px}
+:where(.operational-ui) .lane-heading{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:800;margin-bottom:18px}
+:where(.operational-ui) .service-ticket{display:block;text-align:left;width:100%;background:white;color:var(--ink);border:1px solid var(--line);padding:17px;margin-bottom:12px;font-weight:500;box-shadow:0 2px 3px #17283e05}
+:where(.operational-ui) .service-ticket:hover{background:#f6fbff;color:var(--ink)}
+:where(.operational-ui) .service-ticket strong{display:block;font-size:12px;margin:8px 0}
+:where(.operational-ui) .service-ticket small{display:block;color:var(--muted);font-size:10px;line-height:1.6}
+:where(.operational-ui) .ticket-code{font-size:9px;color:#1685ad}
+:where(.operational-ui) .driver-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+:where(.operational-ui) .driver-card h3{margin:16px 0 6px}
+:where(.operational-ui) .driver-card p{font-size:12px;color:var(--muted)}
+:where(.operational-ui) .driver-card .plate{font-size:24px;letter-spacing:2px;font-weight:800;margin:10px 0 18px}
+:where(.operational-ui) .driver-card button{margin-top:16px}
+:where(.operational-ui) .map-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:22px}
+:where(.operational-ui) #fleetMap{height:440px;border-radius:10px;background:#e8eef2;z-index:0}
+:where(.operational-ui) .route-controls{display:flex;flex-direction:column;gap:15px}
+:where(.operational-ui) .route-summary{background:#f1f7fb;border:1px solid #d8e9f3;border-radius:8px;padding:15px;color:#3c617a;font-size:11px;line-height:1.8}
+:where(.operational-ui) .route-summary strong{font-size:20px;display:block}
+:where(.operational-ui) .route-controls p{margin:0}
+:where(.operational-ui) .map-legend{display:flex;gap:18px;margin-top:14px;color:#17829c;font-size:10px}
+:where(.operational-ui) .chat{display:flex;flex-direction:column;gap:12px;max-height:390px;min-height:230px;overflow:auto;padding:18px 0}
+:where(.operational-ui) .bubble{padding:14px 17px;border-radius:10px;max-width:90%;font-size:12px;line-height:1.7;white-space:pre-wrap}
+:where(.operational-ui) .assistant{background:#eff5fa;align-self:flex-start}
+:where(.operational-ui) .user{background:#0b6d9c;color:white;align-self:flex-end}
+:where(.operational-ui) .inline-form{display:flex;gap:10px}
+:where(.operational-ui) .call-record{border-bottom:1px solid var(--line);padding-bottom:15px}
+:where(.operational-ui) .call-record summary{cursor:pointer;font-size:12px;line-height:1.7}
+:where(.operational-ui) .call-record pre{white-space:pre-wrap;background:#f5f8fb;color:var(--ink);margin-top:12px}
+:where(.operational-ui) .endpoint{display:flex;align-items:center;gap:15px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+:where(.operational-ui) .endpoint code{font-size:12px}
+:where(.operational-ui) .endpoint span:last-child{font-size:11px;color:var(--muted)}
+:where(.operational-ui) pre{padding:20px;border-radius:9px;background:#0b2034;color:#a9d7e8;font:11px/1.8 ui-monospace,monospace;overflow:auto;margin:20px 0}
+:where(.operational-ui) .guide{padding-left:20px;color:var(--muted);font-size:12px;line-height:2.2}
+:where(.operational-ui) .hour-chart{height:185px;display:flex;gap:4px;align-items:flex-end;padding-top:10px}
+:where(.operational-ui) .hour-column{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;gap:8px}
+:where(.operational-ui) .hour-bar{background:#30a6c0;width:100%;max-width:24px;border-radius:4px 4px 0 0;min-height:2px}
+:where(.operational-ui) .hour-column span{font-size:8px;color:var(--muted)}
+:where(.operational-ui) footer{display:flex;justify-content:space-between;color:#8496a8;font-size:10px;padding:24px 0 30px;gap:20px}
+:where(.operational-ui) .alert{background:#fff0e5;color:#8c451e;border:1px solid #f1d5bf;border-radius:8px;padding:15px;margin-top:20px;font-size:12px}
+.toast.operational-ui{position:fixed;bottom:24px;right:24px;max-width:420px;z-index:2200;background:#0b2943;color:white;border:1px solid #31677d;border-radius:10px;padding:17px 22px;box-shadow:0 10px 35px #0002;font-size:12px}
+dialog.operational-ui{border:1px solid var(--line);border-radius:15px;width:480px;max-width:calc(100% - 32px);max-height:90vh;overflow:auto;padding:26px;color:var(--ink)}
+dialog.operational-ui::backdrop{background:#04172ac4;backdrop-filter:blur(3px)}
+:where(.operational-ui) .dialog-form{display:flex;flex-direction:column;gap:18px}
+:where(.operational-ui) .dialog-form .card-heading{margin-bottom:0}
+:where(.operational-ui) .dialog-form p{margin-bottom:0}
+:where(.operational-ui) .dialog-form button[type=submit],:where(.operational-ui) .dialog-form>button:last-child{margin-top:8px}
+:where(.operational-ui) .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0)}
+:where(.operational-ui) [hidden]{display:none!important}
+@media(max-width:1200px){:where(.operational-ui) .driver-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+:where(.operational-ui) .map-layout{grid-template-columns:minmax(0,1fr) 225px}}
+@media(max-width:900px){:where(.operational-ui) .eyebrow{font-size:8px}
+:where(.operational-ui) .workflow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){:where(.operational-ui) .driver-grid,:where(.operational-ui) .workflow,:where(.operational-ui) .map-layout{grid-template-columns:1fr}
+:where(.operational-ui) .section-intro{align-items:flex-start;flex-direction:column}
+:where(.operational-ui) .card-heading{align-items:flex-start}
+:where(.operational-ui) .map-legend{gap:10px;flex-wrap:wrap}
+:where(.operational-ui) #fleetMap{height:330px}
+:where(.operational-ui) .filters{flex-direction:column}
+:where(.operational-ui) footer span{display:none}
+:where(.operational-ui) .hour-column:nth-child(odd) span{visibility:hidden}
+:where(.operational-ui) .inline-form button{padding:10px}
+.toast.operational-ui{left:16px;right:16px;bottom:16px}}
+.operational-ui .card { margin-bottom:22px;min-width:0; }
+.operational-ui h2 { margin:0 0 12px; }
+.operational-ui .card-heading h2 { margin:0; }
+.operational-ui .section-intro h2 { font-size:22px; }
+.operational-ui .view { padding-top:0; }
+.operational-ui .kpi-value { font-size:28px; }
+.operational-ui .kpi-footer-tag { line-height:1.6; }
+.operational-ui .analytics-grid-2 { align-items:start; }
+.operational-ui .workflow-lane { border:1px solid var(--border-card); }
+.operational-ui .service-ticket { border-radius:var(--radius-md); }
+.operation-refresh { border:1px solid #e2e8f0;background:white;color:#475569;border-radius:8px;padding:9px 12px;font:600 11px 'Plus Jakarta Sans',sans-serif;cursor:pointer; }
+.operation-refresh:disabled { opacity:.5; }
+.operation-clock { color:#64748b;font-size:11px;white-space:nowrap; }
+.mobile-only { display:none; }
+.sidebar-footer .live-online-tag { font-size:8px;white-space:normal;text-align:right; }
+.top-header .header-search { max-width:230px; }
+.top-header .header-title-wrap { min-width:180px; }
+.top-header .header-right { gap:12px; }
+.top-header { min-height:var(--header-height);height:auto;padding-top:14px;padding-bottom:14px; }
+[hidden] { display:none!important; }
+dialog.operational-ui { z-index:1200;margin:auto; }
+@media(max-width:900px) { .sidebar.open .sidebar-brand-info {display:flex;} .sidebar.open .nav-label,.sidebar.open .nav-section-title,.sidebar.open .nav-badge,.sidebar.open .sidebar-footer {display:block;} .sidebar.open .sidebar-header {justify-content:flex-start;padding:0 20px;} .sidebar.open .nav-item a {justify-content:flex-start;padding:14px 16px;} }
+@media(max-width:1200px) { .top-header .header-search,.operation-clock {display:none;} }
+@media(max-width:900px) { .sidebar { transform:translateX(-100%);width:268px;z-index:1000;} .sidebar.open {transform:translateX(0);} .main-wrapper {margin-left:0;width:100%;} .mobile-only {display:flex;} .top-header {padding:16px 20px;flex-wrap:wrap;gap:12px;} .top-header .header-left {gap:12px;} .top-header .header-right {margin-left:auto;} .top-header .user-profile-header {display:none;} .top-header .header-title-wrap {min-width:0;} .top-header .kpi-pill-live {display:none;} .dashboard-content {padding:20px;} }
+@media(max-width:620px) { .operational-ui .analytics-grid-2 {grid-template-columns:1fr;} .top-header .header-right {width:100%;justify-content:flex-end;} .top-header .header-subtitle {font-size:10px;} .dashboard-content {padding:16px;} .operational-ui .kpi-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;} .operational-ui .kpi-card {padding:15px;} .operational-ui .kpi-value {font-size:22px;} }

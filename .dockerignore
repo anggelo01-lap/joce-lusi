@@ -1,0 +1,8 @@
+.env
+.env.*
+**/node_modules
+**/__pycache__
+.git
+.aws
+.codex
+.agents

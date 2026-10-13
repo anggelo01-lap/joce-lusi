@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html lang="es-PE">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PlatinumVIP — Centro de Control · Trujillo, Perú</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+<link rel="stylesheet" href="acceso.css"/></head>
+<body>
+<div class="page">
+<!-- ==========================================
+         PANEL IZQUIERDO: ANIMACIÓN HOLOGRAMA & BRANDING
+         ========================================== -->
+<section class="panel-left">
+<!-- Interactive Network & Route Particles Canvas -->
+<canvas class="network-canvas" id="networkCanvas"></canvas>
+<!-- Ambient Glow Orbs -->
+<div class="ambient-glow glow-1"></div>
+<div class="ambient-glow glow-2"></div>
+<div class="ambient-glow glow-3"></div>
+<!-- Header de la marca -->
+<div class="brand-container">
+<div class="brand-badge-wrap">
+<img alt="Platinium Corporativo VIP" class="brand-logo" src="logo.png"/>
+<div class="brand-texts">
+<span class="brand-title">Platinum<span class="accent-text">VIP</span></span>
+<span class="brand-subtitle">CORPORATE MOBILITY &amp; DISPATCH</span>
+</div>
+</div>
+<div class="system-status-chip">
+<span class="pulse-indicator"></span>
+<span>Central Trujillo</span>
+</div>
+</div>
+<!-- Contenedor Central con Animación Holográfica 3D -->
+<div class="animation-centerpiece">
+<div class="hero-minimal">
+<div class="hero-tag-pill">
+<span class="tag-ping"></span>
+<span>CENTRAL TRUJILLO · PERÚ</span>
+</div>
+<h1 class="hero-headline">
+            El control total de tu flota,<br/>
+<span class="headline-gradient">listo cuando tú lo estés.</span>
+</h1>
+<p class="hero-subline">Gestión de servicios, unidades y recorridos para operaciones ejecutivas en Trujillo, Perú.</p>
+</div>
+<!-- Holographic Radar Stage -->
+<div class="hologram-stage" id="hologramStage">
+<!-- Background Grid Rings -->
+<div class="radar-ring ring-outer"></div>
+<div class="radar-ring ring-mid"></div>
+<div class="radar-ring ring-inner"></div>
+<!-- Axis cross lines -->
+<div class="radar-axis axis-h"></div>
+<div class="radar-axis axis-v"></div>
+<div class="radar-axis axis-d1"></div>
+<div class="radar-axis axis-d2"></div>
+<!-- Sweeping Radar Beam -->
+<div class="radar-sweep-beam"></div>
+<!-- Pulsing Radar Target Blips -->
+<div class="radar-blip blip-1"><span class="blip-pulse"></span></div>
+<div class="radar-blip blip-2"><span class="blip-pulse"></span></div>
+<div class="radar-blip blip-3"><span class="blip-pulse"></span></div>
+<div class="radar-blip blip-4"><span class="blip-pulse"></span></div>
+<!-- Central VIP Glowing Core -->
+<div class="radar-center-core">
+<div class="core-wave wave-1"></div>
+<div class="core-wave wave-2"></div>
+<div class="core-hexagon">
+<svg fill="none" height="26" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="26">
+<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+</svg>
+</div>
+</div>
+<!-- Floating Orbiting Glass Badges -->
+<div class="orbit-badge badge-top-left float-1">
+<div class="orbit-icon icon-emerald">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14">
+<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+<line x1="8" x2="8" y1="2" y2="18"></line>
+<line x1="16" x2="16" y1="6" y2="22"></line>
+</svg>
+</div>
+<div class="badge-text-wrap">
+<span class="badge-title">Recorridos</span>
+<span class="badge-sub">Historial de puntos</span>
+</div>
+</div>
+<div class="orbit-badge badge-top-right float-2">
+<div class="orbit-icon icon-blue">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14">
+<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+</svg>
+</div>
+<div class="badge-text-wrap">
+<span class="badge-title">Despacho VIP</span>
+<span class="badge-sub">Control de servicios</span>
+</div>
+</div>
+<div class="orbit-badge badge-bottom float-3">
+<div class="orbit-icon icon-gold">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14">
+<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+</svg>
+</div>
+<div class="badge-text-wrap">
+<span class="badge-title">Datos de operación</span>
+<span class="badge-sub">PostgreSQL</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer del panel izquierdo -->
+<div class="panel-footer">
+<p class="footer-note">© 2026 PlatinumVip Corporativo. Todos los derechos reservados.</p>
+<div class="footer-links">
+<a href="/dashboard#configuraciones">Soporte</a>
+<span>•</span>
+<a href="/dashboard#configuraciones">Privacidad</a>
+<span>•</span>
+<a href="/dashboard#configuraciones">Términos</a>
+</div>
+</div>
+</section>
+<!-- ==========================================
+         PANEL DERECHO: FORMULARIO DE ACCESO
+         ========================================== -->
+<section class="panel-right">
+<div class="login-wrapper">
+<!-- Mobile Brand (visible only on small screens) -->
+<div class="mobile-brand">
+<img alt="PlatinumVip" class="mobile-logo" src="logo.png"/>
+<span class="mobile-brand-name">PlatinumVIP</span>
+</div>
+<div class="login-box">
+<div class="login-header">
+<div class="login-badge-wrap">
+<span class="login-badge">ACCESO OPERATIVO</span>
+</div>
+<h2 class="login-title">Centro de Control</h2>
+<p class="login-subtitle">Accede a los servicios y unidades registrados en la base de datos de la empresa.</p>
+</div>
+<div id="accessMessage" role="alert" hidden></div>
+<form class="login-form access-login" id="loginForm">
+<label>Correo electrónico<input name="email" type="email" required maxlength="254" autocomplete="username"/></label>
+<label>Contraseña<input name="password" type="password" required maxlength="128" autocomplete="current-password"/></label>
+<button class="btn-primary" id="btnSubmit" type="submit">Iniciar sesión</button>
+<p class="signup-note">Tu empresa y tus permisos se asignan desde tu cuenta.</p>
+</form>
+<form class="login-form access-login" id="setupForm" hidden>
+<label>Código de instalación<input name="codigo" type="password" required autocomplete="off"/></label>
+<p class="signup-note">Copia el valor de ADMIN_SETUP_TOKEN del archivo .env del proyecto. Este registro inicial se cierra al crear las dos cuentas.</p>
+<fieldset><legend>Programador 1 · Superadministrador</legend><label>Nombre<input name="nombre1" required maxlength="120" autocomplete="name"/></label><label>Correo<input name="email1" type="email" required maxlength="254" autocomplete="username"/></label><label>Contraseña<input name="password1" type="password" required minlength="12" maxlength="128" autocomplete="new-password"/></label></fieldset>
+<fieldset><legend>Programador 2 · Superadministrador</legend><label>Nombre<input name="nombre2" required maxlength="120" autocomplete="off"/></label><label>Correo<input name="email2" type="email" required maxlength="254" autocomplete="off"/></label><label>Contraseña<input name="password2" type="password" required minlength="12" maxlength="128" autocomplete="new-password"/></label></fieldset>
+<button class="btn-primary" type="submit">Registrar programadores y comenzar</button>
+</form>
+</div>
+<div class="security-footer">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14">
+<rect height="11" rx="2" ry="2" width="18" x="3" y="11"></rect>
+<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+</svg>
+<span>Trujillo, Perú · Hora local · Sol peruano (S/)</span>
+</div>
+</div>
+</section>
+</div>
+<script>
+    // ========================================================
+    // INTERACTIVE RADAR & CONSTELLATION NETWORK CANVAS
+    // ========================================================
+    const canvas = document.getElementById('networkCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+      let mouse = { x: null, y: null };
+
+      function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        width = canvas.width = rect.width;
+        height = canvas.height = rect.height;
+        initParticles();
+      }
+
+      function initParticles() {
+        particles = [];
+        const count = Math.floor((width * height) / 9000);
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.45,
+            vy: (Math.random() - 0.5) * 0.45,
+            radius: Math.random() * 2 + 1,
+            alpha: Math.random() * 0.5 + 0.2,
+            isSignal: Math.random() > 0.8
+          });
+        }
+      }
+
+      window.addEventListener('resize', resize);
+      canvas.parentElement.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+      });
+
+      canvas.parentElement.addEventListener('mouseleave', () => {
+        mouse.x = null;
+        mouse.y = null;
+      });
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Update & Draw particles
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+
+          // Draw node
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          if (p.isSignal) {
+            ctx.fillStyle = `rgba(56, 189, 248, ${p.alpha + 0.3})`;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#38bdf8';
+          } else {
+            ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+            ctx.shadowBlur = 0;
+          }
+          ctx.fill();
+
+          // Connect lines between nearby nodes
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p.x - p2.x;
+            const dy = p.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 110) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              const lineAlpha = (1 - dist / 110) * 0.15;
+              ctx.strokeStyle = `rgba(56, 189, 248, ${lineAlpha})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+
+          // React slightly to mouse
+          if (mouse.x !== null && mouse.y !== null) {
+            const mdx = p.x - mouse.x;
+            const mdy = p.y - mouse.y;
+            const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+            if (mdist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.strokeStyle = `rgba(56, 189, 248, ${(1 - mdist / 120) * 0.35})`;
+              ctx.lineWidth = 1.2;
+              ctx.stroke();
+            }
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      resize();
+      animate();
+    }
+
+    // Interactive 3D tilt on hologram stage
+    const stage = document.getElementById('hologramStage');
+    if (stage) {
+      document.querySelector('.panel-left').addEventListener('mousemove', (e) => {
+        const rect = stage.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const deltaX = (e.clientX - centerX) / (rect.width / 2);
+        const deltaY = (e.clientY - centerY) / (rect.height / 2);
+        stage.style.transform = `perspective(1000px) rotateX(${-deltaY * 8}deg) rotateY(${deltaX * 8}deg)`;
+      });
+
+      document.querySelector('.panel-left').addEventListener('mouseleave', () => {
+        stage.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+      });
+    }
+
+    // Password toggle
+    const toggleBtn = document.getElementById('togglePassword');
+    const pwdInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    if (toggleBtn && pwdInput) {
+      toggleBtn.addEventListener('click', () => {
+        const isPwd = pwdInput.type === 'password';
+        pwdInput.type = isPwd ? 'text' : 'password';
+        if (isPwd) {
+          eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+        } else {
+          eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle>';
+        }
+      });
+    }
+
+  </script>
+<script defer src="acceso.js"></script></body>
+</html>

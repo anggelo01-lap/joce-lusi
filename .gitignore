@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Logs
 logs
 *.log
@@ -141,3 +142,12 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+=======
+node_modules/
+__pycache__/
+*.pyc
+.env
+postgres_data/
+audio_cache/
+.DS_Store
+>>>>>>> 639ae7c (actualización de la union de orion y backend)

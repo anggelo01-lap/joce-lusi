@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html lang="es-PE">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PlatinumVIP — Central Trujillo</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Leaflet CSS -->
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<!-- Dashboard CSS -->
+<link href="dashboard.css" rel="stylesheet"/>
+<link href="operations.css" rel="stylesheet"/>
+<link href="mejoras.css" rel="stylesheet"/><link rel="stylesheet" href="acceso.css"/></head>
+<body>
+<div class="app-container">
+<!-- ==========================================
+         SIDEBAR NAVIGATION (7 MÓDULOS PRINCIPALES)
+         ========================================== -->
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<div class="sidebar-logo-wrap">
+<img alt="PlatinumVip Logo" class="sidebar-logo" src="logo.png"/>
+</div>
+<div class="sidebar-brand-info">
+<span class="brand-name">Platinum<span class="brand-accent">VIP</span></span>
+<span class="brand-tier"><span class="tier-pulse"></span> CORPORATIVO VIP</span>
+</div>
+</div>
+<nav class="sidebar-nav">
+<!-- SECCIÓN 1: OPERACIONES PRINCIPALES -->
+<div class="nav-section">
+<div class="nav-section-title">Centro Operativo</div>
+<ul class="nav-list">
+<!-- 1. Panel General -->
+<li class="nav-item active" data-view="panel-general">
+<a href="#panel-general">
+<div class="nav-icon-wrap">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<rect height="7" rx="1.5" width="7" x="3" y="3"></rect>
+<rect height="7" rx="1.5" width="7" x="14" y="3"></rect>
+<rect height="7" rx="1.5" width="7" x="14" y="14"></rect>
+<rect height="7" rx="1.5" width="7" x="3" y="14"></rect>
+</svg>
+</div>
+<span class="nav-label">Panel General</span>
+<span class="nav-badge badge-cyan">360°</span>
+</a>
+</li>
+<!-- 2. Flujo de Trabajo -->
+<li class="nav-item" data-view="flujo-trabajo">
+<a href="#flujo-trabajo">
+<div class="nav-icon-wrap">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="6" cy="6" r="3"></circle>
+<circle cx="6" cy="18" r="3"></circle>
+<line x1="6" x2="6" y1="9" y2="15"></line>
+<path d="M18 9a9 9 0 0 1-9 9"></path>
+<circle cx="18" cy="9" r="3"></circle>
+</svg>
+</div>
+<span class="nav-label">Flujo de Trabajo</span>
+<span class="nav-badge badge-emerald">6 Fases</span>
+</a>
+</li>
+<!-- 3. Consola de la Operadora IA -->
+<li class="nav-item" data-view="consola-ia">
+<a href="#consola-ia">
+<div class="nav-icon-wrap">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 2a4 4 0 0 0-4 4v1H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"></path>
+<circle cx="9" cy="13" fill="currentColor" r="1.25"></circle>
+<circle cx="15" cy="13" fill="currentColor" r="1.25"></circle>
+<path d="M10 16.5c1 .5 3 .5 4 0"></path>
+</svg>
+</div>
+<span class="nav-label">Consola Operadora IA</span>
+<span class="nav-badge badge-purple">Orión</span>
+</a>
+</li>
+<!-- 4. Despacho y Flujo -->
+<li class="nav-item" data-view="despacho-flujo">
+<a href="#despacho-flujo">
+<div class="nav-icon-wrap">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+<line x1="8" x2="8" y1="2" y2="18"></line>
+<line x1="16" x2="16" y1="6" y2="22"></line>
+</svg>
+</div>
+<span class="nav-label">Despacho y Flujo</span>
+<span class="nav-badge badge-live">GPS manual</span>
+</a>
+</li>
+<li class="nav-item" data-view="unidades">
+<a href="#unidades">
+<div class="nav-icon-wrap">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+<line x1="8" x2="8" y1="2" y2="18"></line>
+<line x1="16" x2="16" y1="6" y2="22"></line>
+</svg>
+</div>
+<span class="nav-label">Unidades y conductores</span>
+
+</a>
+</li></ul>
+</div>
+<!-- SECCIÓN 2: INTEGRACIÓN, DESARROLLO & CONTROL -->
+<div class="nav-section">
+<div class="nav-section-title">Integración &amp; Sistema</div>
+<ul class="nav-list">
+<!-- 5. Conexiones -->
+<li class="nav-item" data-view="conexiones">
+<a href="#conexiones">
+<div class="nav-icon-wrap">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+<polyline points="15 3 21 3 21 9"></polyline>
+<line x1="10" x2="21" y1="14" y2="3"></line>
+</svg>
+</div>
+<span class="nav-label">Conexiones</span>
+<span class="nav-badge badge-emerald">Ver estado</span>
+</a>
+</li>
+<!-- 6. API -->
+<li class="nav-item" data-view="api">
+<a href="#api">
+<div class="nav-icon-wrap">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="16 18 22 12 16 6"></polyline>
+<polyline points="8 6 2 12 8 18"></polyline>
+<line x1="14" x2="10" y1="4" y2="20"></line>
+</svg>
+</div>
+<span class="nav-label">Documentación API</span>
+<span class="nav-badge badge-blue">REST</span>
+</a>
+</li>
+<!-- 7. Configuraciones -->
+<li class="nav-item" data-view="configuraciones">
+<a href="#configuraciones">
+<div class="nav-icon-wrap">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="3"></circle>
+<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+</svg>
+</div>
+<span class="nav-label">Configuraciones</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Connection Status Widget in Sidebar -->
+<div class="sidebar-footer">
+<div class="dispatch-live-widget">
+<div class="dispatch-live-header">
+<span class="live-indicator">Central Trujillo · Perú</span>
+<span class="live-online-tag" id="connectionState">Conectando…</span>
+</div>
+<p class="live-subtext" id="lastSync">Esperando datos de PostgreSQL</p>
+</div>
+</div>
+</aside>
+<!-- ==========================================
+         MAIN WRAPPER & HEADER
+         ========================================== -->
+<div class="main-wrapper">
+<!-- Top Header -->
+<header class="top-header">
+<div class="header-left"><button aria-label="Abrir menú" class="icon-btn mobile-only" id="menuButton">☰</button>
+<div class="header-title-wrap">
+<h1 id="currentViewTitle"><span id="viewTitle">Panel General</span><span class="kpi-pill-live">Datos registrados</span></h1>
+<span class="header-subtitle" id="currentViewSubtitle">Servicios, unidades y recorridos · Trujillo, Perú</span>
+</div>
+<div class="header-search">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="11" cy="11" r="8"></circle>
+<line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+</svg>
+<input id="globalSearchInput" placeholder="Buscar pasajero, chofer, placa, servicio..." type="text"/>
+</div>
+</div>
+<div class="header-right"><span class="operation-clock" id="clock"></span><button class="operation-refresh" id="refreshButton">↻ Actualizar</button>
+<!-- Simulation toggle -->
+
+<!-- New dispatch button -->
+<button class="btn-action-primary" id="newServiceButton">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="16">
+<line x1="12" x2="12" y1="5" y2="19"></line>
+<line x1="5" x2="19" y1="12" y2="12"></line>
+</svg>
+            + Nuevo Despacho
+          </button>
+<!-- Notification Bell -->
+
+<!-- User Profile & Logout -->
+<a class="user-profile-header" href="index.html" title="Volver al inicio">
+<div class="user-avatar">OP</div>
+<div class="user-info">
+<span class="user-name">Operador Principal</span>
+<span class="user-role">Central Trujillo / Perú</span>
+</div>
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2" style="color:#94a3b8; margin-left: 4px;" viewbox="0 0 24 24" width="16">
+<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+<polyline points="16 17 21 12 16 7"></polyline>
+<line x1="21" x2="9" y1="12" y2="12"></line>
+</svg>
+</a>
+</div>
+</header>
+<!-- ==========================================
+           DASHBOARD VIEWS CONTAINER (7 PANELES)
+           ========================================== -->
+<main class="dashboard-content operational-ui"><div class="alert" hidden="" id="alert" role="alert"></div><section class="view dashboard-view active" id="view-panel-general">
+<div class="executive-banner">
+<div class="banner-content">
+<div class="banner-tag">CENTRAL TRUJILLO · PERÚ</div>
+<h2 class="banner-title">Bienvenido al Centro de Control Ejecutivo</h2>
+<p class="banner-desc">Gestión de flota VIP, despacho de servicios y consulta de recorridos registrados en la base de datos.</p>
+</div>
+<div class="banner-quick-actions">
+<button class="banner-btn" data-go="despacho-flujo"><svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg> Ver despacho y recorridos</button>
+<button class="banner-btn primary" data-go="consola-ia"><svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M12 2a4 4 0 0 0-4 4v1H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"></path></svg> Consola Operadora IA</button>
+</div>
+</div>
+<div class="attention-strip" id="attention" aria-live="polite"></div>
+<div class="kpi-grid" id="metrics"><div class="empty">Cargando indicadores…</div></div>
+<div class="two-columns analytics-grid-2"><article class="card chart-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">ACTIVIDAD DE HOY</p><h2 class="card-title">Servicios por hora</h2></div><span class="tag">Hora de Perú</span></div><div class="hour-chart" id="hourChart"></div></article><article class="card chart-card"><div class="card-heading card-header-flex"><h2 class="card-title">Estado de la operación</h2></div><div class="stack" id="operationSummary"></div><button class="secondary" data-go="flujo-trabajo">Ver flujo de servicios →</button></article></div>
+<div class="stats-grid" id="statsGrid"><div class="empty">Cargando estadísticas…</div></div>
+<article class="card chart-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">ÚLTIMOS REGISTROS</p><h2 class="card-title">Servicios recientes</h2></div><button class="secondary" data-go="despacho-flujo">Ir a despacho →</button></div><div id="recentServices"></div></article>
+</section><section class="view dashboard-view" hidden="" id="view-flujo-trabajo"><div class="section-intro"><div><h2>Del pedido al destino</h2><p>Arrastra cada tarjeta a la siguiente fase o usa sus botones. Cada cambio se guarda en la base de datos.</p></div><button id="wfNew">+ Nuevo servicio</button></div><div class="wf-toolbar"><label class="search-label sr-label">Buscar<input id="wfSearch" placeholder="Cliente, placa, origen, destino…" type="search"/></label><label>Categoría<select id="wfCat"><option value="">Todas</option><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label><label class="wf-check"><input id="wfHideDone" type="checkbox"/> Ocultar finalizados</label></div><div class="wf-stats" id="wfStats"></div><div class="workflow wf-board" id="workflow"></div></section><section class="view dashboard-view" hidden="" id="view-consola-ia"><div class="console-layout"><article class="card chart-card chat-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">OPERADORA VIRTUAL</p><h2 class="card-title">Conversar con Orión</h2></div><div class="chat-head-actions"><span class="tag" id="orionStatus">Comprobando…</span><button class="secondary" id="chatReset" type="button">Nueva conversación</button></div></div><div aria-live="polite" class="chat" id="chat"></div><div class="quick-replies" id="quickReplies"></div><form class="inline-form" id="chatForm"><label class="sr-only" for="chatText">Mensaje para Orión</label><input autocomplete="off" id="chatText" maxlength="2000" placeholder="Escribe o dicta el pedido del cliente…" required=""/><button class="secondary" id="chatMic" hidden="" title="Dictar" type="button">🎤</button><button id="chatSend">Enviar</button></form></article><article class="card chart-card ficha-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">FICHA DEL PEDIDO</p><h2 class="card-title">Datos detectados</h2></div><span class="tag" id="fichaProgress">0/4</span></div><div class="ficha-bar"><span id="fichaBar"></span></div><div class="stack ficha-fields"><label>Cliente<input id="fNombre" maxlength="120" placeholder="Cliente"/></label><label>Teléfono *<input id="fTelefono" maxlength="30" placeholder="9XX XXX XXX" inputmode="tel"/></label><label>Recojo *<input id="fOrigen" maxlength="500" placeholder="Dirección de recojo"/></label><label>Destino *<input id="fDestino" maxlength="500" placeholder="Dirección de destino"/></label><label>Categoría<select id="fCategoria"><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label></div><p class="muted" id="fichaUnits"></p><button disabled="" id="fichaCreate" type="button">Registrar servicio</button><p class="muted">Los campos se rellenan mientras conversas y puedes corregirlos. Nada se registra hasta pulsar el botón.</p></article></div><article class="card chart-card calls-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">HISTORIAL TELEFÓNICO</p><h2 class="card-title">Llamadas registradas</h2></div><div class="calls-filters"><input id="callSearch" placeholder="Buscar teléfono o cliente…" type="search"/><select id="callStatus"><option value="">Todos los estados</option></select></div></div><div class="calls-layout"><div class="calls-list" id="calls"></div><div class="call-detail" id="callDetail"><div class="empty">Selecciona una llamada para ver la conversación.</div></div></div></article></section><section class="view dashboard-view" hidden="" id="view-despacho-flujo">
+<article class="card map-card chart-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">TRUJILLO Y ALREDEDORES</p><h2 class="card-title">Ubicación y recorridos</h2></div><button class="secondary" id="centerMap">Centrar en Trujillo</button></div><div class="map-layout"><div><div aria-label="Mapa de unidades y recorridos de Trujillo" id="fleetMap"></div><div class="map-legend"><span>● Ubicación ≤ 5 min</span><span class="muted">● Ubicación anterior</span><span>━ Puntos registrados</span></div></div><div class="route-controls"><label>Unidad<select id="routeDriver"><option value="">Seleccionar unidad</option></select></label><label>Fecha del recorrido<input id="routeDate" required="" type="date"/></label><label>Servicio (opcional)<select id="routeService"><option value="">Todos los servicios</option></select></label><button id="loadRoute">Consultar recorrido</button><button class="secondary" disabled="" id="exportRoute">Descargar GeoJSON</button><div aria-live="polite" class="route-summary" id="routeSummary">Elige una unidad y fecha para consultar su historial.</div><p class="muted">Las líneas unen puntos guardados; no calculan una ruta por calles. Las ubicaciones sin fecha no se muestran.</p><button class="secondary" id="openPosition">+ Registrar ubicación manual</button></div></div></article>
+<article class="card chart-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">CENTRAL DE DESPACHO</p><h2 class="card-title">Servicios</h2></div><span class="tag">Últimos 100</span></div><div class="filters"><label class="search-label">Buscar<input id="serviceSearch" placeholder="Cliente, placa, origen o código…" type="search"/></label><label>Estado<select id="serviceStatus"><option value="">Todos</option><option>SOLICITADO</option><option>ASIGNADO</option><option>EN_RECOJO</option><option>EN_CURSO</option><option>COMPLETADO</option><option>CANCELADO</option></select></label></div><div id="servicesTable"></div></article>
+</section><section class="view dashboard-view" hidden="" id="view-unidades"><div class="section-intro"><div><h2>Tu equipo en ruta</h2><p>Unidades registradas y su última ubicación conocida.</p></div><button id="newDriverButton">+ Registrar unidad</button></div><div class="driver-grid" id="drivers"></div></section><section class="view dashboard-view" hidden="" id="view-conexiones"><div class="section-intro"><h2>Estado de las integraciones</h2><p>Base de datos y Orión se comprueban al abrir esta sección. Tener credenciales no confirma disponibilidad del proveedor.</p></div><div class="driver-grid" id="connections"></div></section><section class="view dashboard-view" hidden="" id="view-api"><article class="card chart-card"><div class="card-heading card-header-flex"><h2 class="card-title">Documentación interactiva (Swagger UI)</h2><span class="tag">REST · JSON</span></div><p class="muted">Prueba cada endpoint desde el navegador con “Try it out”.</p><div class="docs-banner"><div><strong>API de operaciones</strong><p class="muted">Conductores, servicios, ubicaciones y webhooks del backend.</p></div><a class="btn-link primary" href="/api/docs" target="_blank" rel="noopener">Abrir Swagger del backend ↗</a></div><div class="docs-banner"><div><strong>API de Orión</strong><p class="muted">Consulta y prueba los endpoints del asistente Orión.</p></div><a class="btn-link primary" href="http://localhost:8000/docs" target="_blank" rel="noopener">Abrir Swagger de Orión ↗</a></div></article></section><section class="view dashboard-view" hidden="" id="view-configuraciones"><div class="two-columns analytics-grid-2"><article class="card chart-card"><div class="card-heading card-header-flex"><h2 class="card-title">Configuración de la central</h2><span class="tag">PostgreSQL</span></div><p class="muted" id="settingsPermission"></p><form class="stack" id="settingsForm"><label>Nombre de la empresa<input id="companyName" maxlength="120" name="empresa" required=""/></label><div class="two-columns analytics-grid-2"><label>Ciudad<input readonly="" value="Trujillo"/></label><label>País<input readonly="" value="Perú"/></label><label>Zona horaria<input readonly="" value="America/Lima"/></label><label>Moneda<input readonly="" value="PEN · Sol peruano"/></label></div><label>Actualización automática (segundos)<input id="refreshSeconds" max="300" min="15" required="" step="1" type="number"/></label><button>Guardar configuración</button></form></article><article class="card chart-card"><p class="eyebrow">CÓMO EMPEZAR</p><h2>De la central al recorrido</h2><ol class="guide"><li>Registra tus unidades con conductor, placa y categoría.</li><li>Crea un servicio con teléfono, origen y destino.</li><li>Asigna una unidad disponible de la misma categoría.</li><li>Registra puntos manuales o envíalos por la API.</li><li>Consulta los recorridos por unidad, día y servicio.</li></ol><p class="muted">Las ubicaciones manuales sirven como registros puntuales. Para seguimiento continuo se necesita conectar una fuente GPS.</p></article></div><div class="access-roles">
+ <article class="access-role"><span class="tag">PLATAFORMA</span><h3>Superadministrador</h3><p>Los dos programadores. Acceso a todas las empresas, alta de empresas y gestión de administradores y trabajadores.</p></article>
+ <article class="access-role"><span class="tag">EMPRESA</span><h3>Administrador</h3><p>El dueño de la empresa. Gestiona su operación, configuración y cuentas de trabajadores.</p></article>
+ <article class="access-role"><span class="tag">OPERACIÓN</span><h3>Usuario</h3><p>Los trabajadores. Gestionan servicios, unidades y recorridos de su empresa; consultan la configuración.</p></article>
+</div>
+<div class="access-section" hidden id="companyManagement"><article class="card chart-card"><div class="card-heading"><h2>Empresas de la plataforma</h2><span class="tag">Superadministrador</span></div><p class="muted">Cada empresa tiene sus propios servicios, unidades, clientes y llamadas. Al crear una empresa, se abre su central vacía para que registres al dueño.</p><div class="access-form-grid"><form class="stack" id="switchCompanyForm"><label>Empresa activa<select id="companySelect"></select></label><button type="submit">Abrir empresa</button></form><form class="stack" id="createCompanyForm"><label>Nueva empresa<input id="newCompanyName" maxlength="120" required placeholder="Nombre de la empresa"/></label><button class="secondary" type="submit">Crear y abrir empresa</button></form></div><p class="muted company-list-note">Administra las empresas de la plataforma. Para eliminar una empresa debe estar vacía y debes abrir otra central primero.</p><div id="companyList"></div></article></div>
+<div class="access-section" hidden id="userManagement"><article class="card chart-card"><div class="card-heading"><h2>Cuentas y permisos</h2><span class="tag" id="activeCompanyLabel"></span></div><p class="muted">Las cuentas creadas aquí pertenecen a la empresa activa. Una cuenta desactivada pierde el acceso inmediatamente.</p><div class="access-account-layout"><form class="stack" id="createAccountForm"><label>Nombre completo<input name="nombre" maxlength="120" required autocomplete="off"/></label><label>Correo de acceso<input name="email" type="email" maxlength="254" required autocomplete="off"/></label><label>Rol<select name="rol" id="accountRole"></select></label><label>Contraseña inicial<input name="password" type="password" minlength="12" maxlength="128" required autocomplete="new-password"/></label><p class="muted">Mínimo 12 caracteres. Entrega la contraseña al titular para que la cambie desde su cuenta.</p><button type="submit">Crear cuenta</button></form><div id="accountList"></div></div></article></div>
+<div class="access-section"><article class="card chart-card"><div class="card-heading"><h2>Seguridad de mi cuenta</h2><span class="tag">Personal</span></div><form class="stack" id="passwordForm"><div class="access-form-grid"><label>Contraseña actual<input name="actual" type="password" maxlength="128" required autocomplete="current-password"/></label><label>Nueva contraseña<input name="password" type="password" minlength="12" maxlength="128" required autocomplete="new-password"/></label></div><button type="submit">Cambiar mi contraseña</button></form></article></div></section><footer>PlatinumVIP · Trujillo, Perú <span>Datos de operación · Sin simulaciones</span></footer></main>
+</div>
+</div>
+<!-- ==========================================
+       MODAL: NUEVO DESPACHO VIP
+       ========================================== -->
+
+<!-- ==========================================
+       TOAST CONTAINER
+       ========================================== -->
+
+<!-- Leaflet JS & Chart.js -->
+
+
+<!-- Dashboard Script -->
+
+<dialog class="operational-ui" id="serviceDialog"><form class="dialog-form" id="serviceForm"><div class="card-heading card-header-flex"><h2 class="card-title">Nuevo servicio</h2><button aria-label="Cerrar" class="icon-button" data-close="" type="button">×</button></div><p class="muted">Registra el pedido; después podrás asignar una unidad.</p><label>Nombre del cliente<input maxlength="120" name="nombre" required=""/></label><label>Teléfono<input maxlength="30" name="telefono" placeholder="+51…" required="" type="tel"/></label><label>Punto de recojo<input maxlength="500" name="origen" placeholder="Dirección en Trujillo" required=""/></label><label>Destino<input maxlength="500" name="destino" placeholder="Dirección de destino" required=""/></label><label>Categoría<select name="categoria"><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label><button>Guardar servicio</button></form></dialog><dialog class="operational-ui" id="driverDialog"><form class="dialog-form" id="driverForm"><div class="card-heading card-header-flex"><h2 class="card-title">Registrar unidad</h2><button aria-label="Cerrar" class="icon-button" data-close="" type="button">×</button></div><label>Código de unidad<input maxlength="30" name="codigo" placeholder="UNI-001" required=""/></label><label>Conductor<input maxlength="120" name="nombre" required=""/></label><label>Teléfono<input maxlength="30" name="telefono" type="tel"/></label><label>Placa<input maxlength="20" name="placa" required=""/></label><label>Vehículo<input maxlength="120" name="vehiculo" placeholder="Marca y modelo" required=""/></label><label>Categoría<select name="categoria"><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label><button>Guardar unidad</button></form></dialog><dialog class="operational-ui" id="editDialog"><form class="dialog-form" id="editForm"><div class="card-heading card-header-flex"><h2 class="card-title">Gestionar servicio</h2><button aria-label="Cerrar" class="icon-button" data-close="" type="button">×</button></div><p class="muted" id="editServiceInfo"></p><input id="editServiceId" type="hidden"/><label>Unidad<select id="editDriver"><option value="">Sin asignar</option></select></label><label>Estado<select id="editStatus"></select></label><label>Tarifa acordada (S/)<input id="editFare" max="99999999" min="0" placeholder="Sin registrar" step="0.01" type="number"/></label><button>Guardar cambios</button></form></dialog><dialog class="operational-ui" id="positionDialog"><form class="dialog-form" id="positionForm"><div class="card-heading card-header-flex"><h2 class="card-title">Registrar ubicación</h2><button aria-label="Cerrar" class="icon-button" data-close="" type="button">×</button></div><p class="muted">Introduce coordenadas verificadas. La hora se guarda en Perú; puedes registrar un punto histórico.</p><label>Unidad<select id="positionDriver" required=""></select></label><label>Servicio (opcional)<select id="positionService"><option value="">Sin servicio asociado</option></select></label><div class="two-columns analytics-grid-2"><label>Latitud<input id="positionLat" max="90" min="-90" placeholder="-8.…" required="" step="any" type="number"/></label><label>Longitud<input id="positionLng" max="180" min="-180" placeholder="-79.…" required="" step="any" type="number"/></label></div><label>Fecha y hora de Perú<input id="positionTime" required="" type="datetime-local"/></label><button>Guardar punto</button></form></dialog><div class="toast operational-ui" hidden="" id="toast" role="status"></div><script defer="True" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script defer="True" src="mejoras.js"></script>
+<dialog class="operational-ui" id="accountDialog"><form class="dialog-form" id="editAccountForm"><div class="card-heading"><h2>Editar cuenta</h2><button type="button" class="icon-button" data-close aria-label="Cerrar">×</button></div><input type="hidden" id="editAccountId"/><label>Nombre completo<input name="nombre" maxlength="120" required/></label><label>Correo de acceso<input name="email" type="email" maxlength="254" required/></label><label>Rol<select id="editAccountRole" name="rol"></select></label><label>Nueva contraseña (opcional)<input name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password"/></label><p class="muted">Al guardar se cierran las sesiones de esta cuenta.</p><button type="submit">Guardar cuenta</button></form></dialog><script defer src="acceso.js"></script><script defer="True" src="dashboard.js"></script></body>
+</html>
