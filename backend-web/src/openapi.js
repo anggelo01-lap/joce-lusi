@@ -38,6 +38,11 @@ module.exports = {
       get: { tags: ['Unidades'], summary: 'Unidades registradas', responses: { 200: ok('Unidades', arr('Conductor')) } },
       post: { tags: ['Unidades'], summary: 'Registrar una unidad', requestBody: { required: true, content: json({ type: 'object', required: ['codigo', 'nombre', 'placa', 'vehiculo', 'categoria'], properties: { codigo: { type: 'string', maxLength: 30, example: 'U-01' }, nombre: { type: 'string', maxLength: 120 }, telefono: { type: 'string', maxLength: 30 }, placa: { type: 'string', maxLength: 20, example: 'ABC-123' }, vehiculo: { type: 'string', maxLength: 120, example: 'Toyota Camry 2022' }, categoria: { type: 'string', enum: CATEGORIAS } } }) }, responses: { 201: ok('Unidad creada', ref('Conductor')), 400: err[400], 409: { description: 'Ese código ya está registrado', content: json(ref('Error')) } } }
     },
+    '/conductores/{id}': {
+      get: { tags: ['Unidades'], summary: 'Consultar una unidad', parameters: [idParam()], responses: { 200: ok('Unidad', ref('Conductor')), ...err } },
+      put: { tags: ['Unidades'], summary: 'Editar unidad y conductor', description: 'Reemplaza los datos de registro sin alterar el estado ni las ubicaciones. No permite editar unidades con servicios activos.', parameters: [idParam()], requestBody: { required: true, content: json({ type: 'object', required: ['codigo','nombre','placa','vehiculo','categoria'], properties: { codigo: { type:'string', maxLength:30 }, nombre: { type:'string', maxLength:120 }, telefono: { type:'string', maxLength:30 }, placa: { type:'string', maxLength:20 }, vehiculo: { type:'string', maxLength:120 }, categoria: { type:'string', enum:CATEGORIAS } } }) }, responses: { 200: ok('Unidad actualizada', ref('Conductor')), ...err } },
+      delete: { tags: ['Unidades'], summary: 'Eliminar una unidad sin historial', description: 'Rechaza la eliminación si hay servicios o ubicaciones registrados. Conserva el historial operativo.', parameters: [idParam()], responses: { 200: ok('Unidad eliminada', { type:'object', properties: { eliminado: { type:'boolean' }, id: { type:'integer' } } }), ...err } }
+    },
     '/conductores/{id}/posiciones': {
       post: { tags: ['Ubicación'], summary: 'Guardar un punto de ubicación', description: 'Un punto por solicitud. `registrado_en` es opcional, debe incluir zona horaria y no puede estar en el futuro. Un punto histórico no reemplaza una ubicación más reciente.', parameters: [idParam('Id de la unidad')], requestBody: { required: true, content: json({ type: 'object', required: ['latitud', 'longitud'], properties: { latitud: { type: 'number', minimum: -90, maximum: 90, example: -8.1116 }, longitud: { type: 'number', minimum: -180, maximum: 180, example: -79.0287 }, fuente: { type: 'string', enum: ['manual', 'gps', 'movil'], default: 'manual' }, registrado_en: { type: 'string', format: 'date-time', example: '2026-10-12T10:30:00-05:00' }, servicio_id: { type: 'integer', nullable: true, description: 'Debe pertenecer a la unidad' } } }) }, responses: { 201: ok('Punto guardado', ref('Posicion')), 400: err[400], 404: err[404] } }
     },
@@ -65,3 +70,33 @@ module.exports = {
     }
   }
 };
+
+// Public names distinguish vehicles from people. Legacy unit URLs remain aliases.
+const spec=module.exports;
+const personSchema={type:'object',required:['codigo','nombre'],properties:{codigo:{type:'string',maxLength:30},nombre:{type:'string',maxLength:120},telefono:{type:'string',maxLength:30},licencia:{type:'string',maxLength:40},activo:{type:'boolean',default:true}}};
+spec.components.schemas.PersonaConductora=personSchema;
+Object.assign(personSchema.properties,{id:{type:'integer',readOnly:true},unidad_id:{type:'integer',nullable:true,readOnly:true},unidad_codigo:{type:'string',nullable:true,readOnly:true},placa:{type:'string',nullable:true,readOnly:true}});
+spec.components.schemas.Unidad=JSON.parse(JSON.stringify(spec.components.schemas.Conductor));
+Object.assign(spec.components.schemas.Unidad.properties,{chofer_id:{type:'integer',nullable:true},conductor_activo:{type:'boolean',nullable:true}});
+spec.components.schemas.Unidad.properties.nombre.description='Nombre del conductor actual, obtenido de su registro independiente.';
+Object.assign(spec.components.schemas.Servicio.properties,{chofer_id:{type:'integer',nullable:true},conductor_nombre:{type:'string',nullable:true,description:'Nombre conservado al despachar el servicio'}});
+for(const suffix of ['', '/{id}', '/{id}/posiciones', '/{id}/recorrido']){
+  spec.paths['/unidades'+suffix]=JSON.parse(JSON.stringify(spec.paths['/conductores'+suffix]).replaceAll('#/components/schemas/Conductor','#/components/schemas/Unidad'));
+  Object.values(spec.paths['/conductores'+suffix]).forEach(operation=>{operation.deprecated=true;});
+}
+for(const operation of [spec.paths['/unidades'].post,spec.paths['/unidades/{id}'].put,spec.paths['/conductores'].post,spec.paths['/conductores/{id}'].put]){
+  const schema=operation.requestBody.content['application/json'].schema;
+  schema.required=['codigo','placa','vehiculo','categoria'];delete schema.properties.nombre;delete schema.properties.telefono;
+}
+spec.paths['/unidades/{id}'].put.summary='Editar los datos del vehículo';
+spec.paths['/unidades/{id}'].put.description='Código, placa, vehículo y categoría. El conductor se gestiona mediante la asignación independiente. No permite editar unidades con servicios activos.';
+spec.paths['/personal-conductores']={
+  get:{tags:['Unidades'],summary:'Listar conductores y su unidad actual',responses:{200:ok('Conductores',{type:'array',items:ref('PersonaConductora')})}},
+  post:{tags:['Unidades'],summary:'Registrar conductor independiente',requestBody:{required:true,content:json(personSchema)},responses:{201:ok('Conductor creado',ref('PersonaConductora')),...err}}
+};
+spec.paths['/personal-conductores/{id}']={
+  get:{tags:['Unidades'],summary:'Consultar conductor',parameters:[idParam()],responses:{200:ok('Conductor',ref('PersonaConductora')),...err}},
+  put:{tags:['Unidades'],summary:'Editar o desactivar conductor',description:'No permite editar durante un servicio activo ni desactivar mientras esté asignado a una unidad. El historial conserva el nombre registrado al despachar.',parameters:[idParam()],requestBody:{required:true,content:json(personSchema)},responses:{200:ok('Actualizado',{type:'object'}),...err}},
+  delete:{tags:['Unidades'],summary:'Eliminar conductor sin unidad ni servicios',parameters:[idParam()],responses:{200:ok('Eliminado',{type:'object'}),...err}}
+};
+spec.paths['/unidades/{id}/conductor']={put:{tags:['Unidades'],summary:'Asignar, cambiar o retirar conductor de una unidad',description:'Un conductor activo por unidad; una unidad por conductor. Cambios bloqueados durante servicios activos. Envía chofer_id:null para desasignar.',parameters:[idParam()],requestBody:{required:true,content:json({type:'object',required:['chofer_id'],properties:{chofer_id:{type:'integer',nullable:true,minimum:1}}})},responses:{200:ok('Asignación actualizada',{type:'object'}),...err}}};

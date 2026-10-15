@@ -57,6 +57,8 @@ async function run(){
   await worker('/configuracion','PUT',{empresa:'Forbidden',intervalo_segundos:30},403);
   await worker('/acceso/empresa-activa','POST',{empresa_id:2},403);
   const driver=await worker('/conductores','POST',{codigo:'SHARED-1',nombre:'Company One Driver',placa:'TEST-1',vehiculo:'Test',categoria:'sedan'},201);
+  const personOne=await worker('/personal-conductores','POST',{codigo:'PERSON-1',nombre:'Company One Driver'},201);
+  await worker(`/unidades/${driver.id}/conductor`,'PUT',{chofer_id:personOne.id});
   const service=await worker('/servicios','POST',{telefono:'TEST-1',origen:'First',destino:'Last'},201);
   const second=await root('/acceso/empresas','POST',{nombre:'Second company'},201);
   await root('/acceso/empresa-activa','POST',{empresa_id:second.id});
@@ -67,7 +69,11 @@ async function run(){
   await root('/acceso/usuarios','POST',account('Other Owner','other@test.local','admin'),201);
   await otherOwner('/acceso/login','POST',{email:'other@test.local',password});
   await otherOwner(`/acceso/usuarios/${workerAccount.id}`,'PATCH',{activo:false},404);
-  await otherOwner('/conductores','POST',{codigo:'SHARED-1',nombre:'Company Two Driver',placa:'TEST-2',vehiculo:'Test',categoria:'sedan'},201);
+  const secondUnit=await otherOwner('/conductores','POST',{codigo:'SHARED-1',nombre:'Company Two Driver',placa:'TEST-2',vehiculo:'Test',categoria:'sedan'},201);
+  const personTwo=await otherOwner('/personal-conductores','POST',{codigo:'PERSON-1',nombre:'Company Two Driver'},201);
+  await otherOwner(`/unidades/${secondUnit.id}/conductor`,'PUT',{chofer_id:personTwo.id});
+  assert.equal((await worker('/personal-conductores'))[0].nombre,'Company One Driver');
+  assert.equal((await otherOwner('/personal-conductores'))[0].nombre,'Company Two Driver');
   const results=await Promise.all(Array.from({length:20},(_,i)=>(i%2?worker:otherOwner)('/conductores')));
   results.forEach((list,i)=>assert.equal(list[0].nombre,i%2?'Company One Driver':'Company Two Driver'));
   await owner('/configuracion','PUT',{empresa:'First renamed',intervalo_segundos:45});

@@ -14,13 +14,27 @@ Abrir http://localhost:5000/dashboard. El backend aplica `backend-web/src/db/ope
 
 ## Operación
 
-1. En **Unidades y conductores**, registrar código, placa, nombre, vehículo y categoría.
+1. En **Unidades y conductores**, registrar el vehículo en **Unidades**, crear la persona en **Conductores** y usar **Asignar conductor**.
 2. En **Nuevo servicio**, registrar cliente, teléfono, origen, destino y categoría.
 3. En **Despacho** o **Flujo de trabajo**, usar **Gestionar** para asignar una unidad disponible de la misma categoría.
 4. Avanzar por `SOLICITADO → ASIGNADO → EN_RECOJO → EN_CURSO → COMPLETADO`. Se puede cancelar un servicio activo. Registrar la tarifa acordada; no se calcula una tarifa automática.
 5. Al completar o cancelar, la unidad vuelve a estar disponible si no tiene otro servicio activo.
 
 Los indicadores cuentan todos los servicios de la base. Las listas y el flujo muestran los últimos 100. La facturación de hoy suma tarifas de servicios finalizados hoy; cambiar una tarifa después no modifica la fecha de finalización. Para los registros completados antes de esta actualización se conserva su última fecha de actualización como fecha histórica de finalización. No representa cobros confirmados: no hay tabla de pagos en esta versión.
+
+## Gestión de unidades y conductores
+
+El módulo tiene dos pestañas con CRUD independientes: **Unidades** (código, placa, vehículo y categoría) y **Conductores** (código, nombre, teléfono, licencia y estado activo/inactivo). La búsqueda de unidades también permite localizar a su conductor actual.
+
+En la tarjeta de una unidad, **Asignar conductor** permite seleccionar una persona activa o **Sin conductor**. Cada conductor puede estar asignado a una sola unidad. Para cambiarlo de vehículo, primero se desasigna de la unidad anterior. Las unidades nuevas pueden registrarse sin conductor, pero no pueden despacharse hasta tener uno activo. No se permite cambiar el conductor ni editar sus datos durante un servicio activo.
+
+Al asignar una unidad a un servicio se guarda el conductor y su nombre en ese momento. Cambiar de conductor o editar su nombre después no modifica los servicios anteriores. Las ubicaciones siguen perteneciendo al vehículo. El rendimiento de unidades se identifica por código y placa.
+
+Solo se pueden eliminar unidades sin servicios ni ubicaciones, y conductores sin unidad asignada ni servicios. Para retirar un conductor con historial, desasígnalo y marca su estado como **Inactivo**.
+
+La migración inicial conserva las unidades y crea registros independientes para los conductores existentes, con códigos `MIG-ID`. Importa a los servicios anteriores la asociación disponible al migrar; no puede reconstruir cambios de turno que nunca fueron registrados. Los registros con nombres iguales no se fusionan automáticamente. Reiniciar el backend no vuelve a importar conductores ni repone asignaciones retiradas.
+
+La API ofrece CRUD en `/api/unidades` y `/api/personal-conductores` (GET/POST en la colección, GET/PUT/DELETE por ID). `PUT /api/unidades/{id}/conductor` recibe `{"chofer_id": ID}` o `{"chofer_id": null}` para desasignar. Las rutas antiguas `/api/conductores` siguen como alias de unidades, marcadas como obsoletas en Swagger; sus campos de nombre y teléfono ya no actualizan personas. `servicios.conductor_id` conserva el identificador de la unidad por compatibilidad; `chofer_id` identifica a la persona. Los endpoints usan la sesión y empresa activa y las modificaciones requieren CSRF.
 
 ## Ubicación manual y futura integración GPS
 

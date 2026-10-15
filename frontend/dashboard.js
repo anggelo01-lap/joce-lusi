@@ -4,7 +4,7 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&am
 const titles = {'panel-general':'Panel general','flujo-trabajo':'Flujo de trabajo','consola-ia':'Consola Orión','despacho-flujo':'Despacho y recorridos',unidades:'Unidades y conductores',conexiones:'Conexiones',api:'Documentación API',configuraciones:'Configuraciones'};
 const states = ['SOLICITADO','ASIGNADO','EN_RECOJO','EN_CURSO','COMPLETADO','CANCELADO'];
 const transitions = {SOLICITADO:['ASIGNADO','CANCELADO'],ASIGNADO:['EN_RECOJO','CANCELADO'],EN_RECOJO:['EN_CURSO','CANCELADO'],EN_CURSO:['COMPLETADO','CANCELADO'],COMPLETADO:[],CANCELADO:[]};
-const state = {drivers:[],services:[],config:null,view:'panel-general',map:null,markers:null,route:null,points:[],routeMeta:null,routeRequest:0,syncing:false,timer:null};
+const state = {drivers:[],people:[],services:[],config:null,view:'panel-general',map:null,markers:null,route:null,points:[],routeMeta:null,routeRequest:0,syncing:false,timer:null};
 const money = value => value==null?'Sin tarifa':new Intl.NumberFormat('es-PE',{style:'currency',currency:'PEN'}).format(Number(value));
 const dateTime = value => value?new Intl.DateTimeFormat('es-PE',{timeZone:'America/Lima',dateStyle:'short',timeStyle:'short'}).format(new Date(value)):'Sin fecha';
 const peruDay = () => new Intl.DateTimeFormat('en-CA',{timeZone:'America/Lima',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
@@ -26,8 +26,8 @@ function filterServiceOptions(driverElement,target,blank) {
 async function sync() {
   if(state.syncing)return; state.syncing=true; $('refreshButton').disabled=true;
   try {
-    const [drivers,services,summary]=await Promise.all([api('/conductores'),api('/servicios'),api('/resumen')]);
-    state.drivers=drivers; state.services=services; renderSummary(summary); renderServices(); renderWorkflow(); renderDrivers(); Mejoras.onSync(summary);
+    const [drivers,services,summary,people]=await Promise.all([api('/unidades'),api('/servicios'),api('/resumen'),api('/personal-conductores')]);
+    state.drivers=drivers;state.people=people;renderPeople(); state.services=services; renderSummary(summary); renderServices(); renderWorkflow(); renderDrivers(); Mejoras.onSync(summary);
     setOptions($('routeDriver'),options(drivers)); setOptions($('positionDriver'),options(drivers));
     filterServiceOptions($('routeDriver'),$('routeService'),'Todos los servicios');
     filterServiceOptions($('positionDriver'),$('positionService'),'Sin servicio asociado');
@@ -56,7 +56,30 @@ function renderServices() {
   $('servicesTable').innerHTML=serviceTable(services); $('recentServices').innerHTML=serviceTable(state.services.slice(0,5),false);
 }
 function renderDrivers() {
-  $('drivers').innerHTML=state.drivers.length?state.drivers.map(d=>`<article class="card driver-card"><div class="card-heading"><span class="tag">${escapeHTML(d.codigo || `#${d.id}`)}</span>${badge(d.estado)}</div><div class="plate">${escapeHTML(d.placa || 'SIN PLACA')}</div><h3>${escapeHTML(d.nombre)}</h3><p>${escapeHTML(d.vehiculo || 'Sin vehículo')} · ${escapeHTML(d.categoria || '')}</p><div class="muted">${escapeHTML(d.telefono || 'Sin teléfono')}<br>Última ubicación: ${dateTime(d.ubicacion_en)}${d.ubicacion_en?`<br>${escapeHTML(d.latitud)}, ${escapeHTML(d.longitud)}`:''}</div><button class="secondary" data-route="${d.id}">Ver recorrido →</button></article>`).join(''):empty('Registra la primera unidad de la empresa para empezar a despachar.');
+  const query=$('driverSearch').value.trim().toLocaleLowerCase('es');
+  const drivers=state.drivers.filter(d=>(!$('driverFilterStatus').value || d.estado===$('driverFilterStatus').value) && (!$('driverFilterCategory').value || d.categoria===$('driverFilterCategory').value) && [d.codigo,d.nombre,d.placa,d.telefono,d.vehiculo].some(v=>String(v || '').toLocaleLowerCase('es').includes(query)));
+  $('driversSummary').innerHTML=[['Unidades registradas',state.drivers.length],['Disponibles',state.drivers.filter(d=>d.estado==='DISPONIBLE').length],['Ocupadas',state.drivers.filter(d=>d.estado==='OCUPADO').length]].map(([label,value])=>`<div class="connection-metric"><span>${label}</span><strong>${value}</strong></div>`).join('');
+  $('driversCount').textContent=`${drivers.length} de ${state.drivers.length} unidades`;
+  $('drivers').innerHTML=drivers.length?drivers.map(d=>`<article class="card driver-card"><div class="card-heading"><span class="tag">${escapeHTML(d.codigo || `#${d.id}`)}</span>${badge(d.estado)}</div><div class="plate">${escapeHTML(d.placa || 'SIN PLACA')}</div><h3>${escapeHTML(d.vehiculo || 'Sin vehículo')}</h3><p class="unit-person">Conductor actual: <strong>${escapeHTML(d.nombre)}</strong></p><p>Categoría: ${escapeHTML(d.categoria || '')}</p><div class="muted">Teléfono: ${escapeHTML(d.telefono || 'Sin registrar')}<br>Última ubicación: ${dateTime(d.ubicacion_en)}</div><div class="driver-actions"><button class="secondary" data-unit-assign="${d.id}">${d.chofer_id?'Cambiar conductor':'Asignar conductor'}</button><button class="secondary" data-driver-edit="${d.id}">Editar unidad</button><button class="secondary" data-route="${d.id}">Ver recorrido</button><button class="secondary danger-button" data-driver-delete="${d.id}">Eliminar</button></div></article>`).join(''):empty(state.drivers.length?'No hay unidades que coincidan con los filtros.':'Registra la primera unidad para empezar a despachar.');
+}
+async function openDriver(id) {
+  const form=$('driverForm');form.reset();$('driverId').value='';
+  if(id){
+    try{
+      const driver=await api(`/unidades/${id}`);
+      for(const name of ['codigo','placa','vehiculo','categoria'])form.elements[name].value=driver[name] || '';
+      $('driverId').value=driver.id;
+    }catch(error){toast(error.message);return;}
+  }
+  $('driverDialogTitle').textContent=id?'Editar unidad':'Registrar unidad';
+  $('driverDialog').showModal();
+}
+async function deleteDriver(button) {
+  const driver=state.drivers.find(d=>String(d.id)===button.dataset.driverDelete);if(!driver)return;
+  if(!confirm(`¿Eliminar la unidad ${driver.codigo || driver.placa} (${driver.placa})? Esta acción es permanente. Solo se pueden eliminar unidades sin servicios ni ubicaciones registrados.`))return;
+  button.disabled=true;
+  try{await api(`/unidades/${driver.id}`,{method:'DELETE'});toast('Unidad eliminada.');await sync();}
+  catch(error){toast(error.message);}finally{button.disabled=false;}
 }
 function showView() {
   const key=location.hash.slice(1),view=titles[key]?key:'panel-general'; state.view=view;
@@ -94,7 +117,7 @@ async function loadRoute() {
   if(!driver || !fecha){toast('Selecciona una unidad y fecha.');return;}
   const request=++state.routeRequest; $('loadRoute').disabled=true;
   try {
-    const data=await api(`/conductores/${driver}/recorrido?fecha=${encodeURIComponent(fecha)}${service?`&servicio_id=${service}`:''}`);
+    const data=await api(`/unidades/${driver}/recorrido?fecha=${encodeURIComponent(fecha)}${service?`&servicio_id=${service}`:''}`);
     if(request!==state.routeRequest)return;
     state.points=data.puntos;state.routeMeta={driver,fecha,service};state.route?.clearLayers();$('exportRoute').disabled=!state.points.length;
     if(!data.puntos.length){$('routeSummary').textContent='No hay ubicaciones registradas para estos filtros. Registra puntos manuales o conecta la API.';return;}
@@ -115,13 +138,39 @@ function exportRoute() {
   const url=URL.createObjectURL(new Blob([JSON.stringify({type:'FeatureCollection',features},null,2)],{type:'application/geo+json'})),a=document.createElement('a');a.href=url;a.download=`recorrido-${state.routeMeta.driver}-${state.routeMeta.fecha}.geojson`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function loadConnections() {
-  $('connections').innerHTML=empty('Comprobando conexiones…');
-  try { const data=await api('/conexiones');$('connections').innerHTML=data.map(c=>`<article class="card driver-card">${badge(c.estado)}<h3>${escapeHTML(c.nombre)}</h3><p>${escapeHTML(c.detalle)}</p></article>`).join(''); }catch(error){$('connections').innerHTML=empty(error.message);}
+  if(loadConnections.busy)return;
+  loadConnections.busy=true;
+  const button=$('checkConnections'),container=$('connections');
+  button.disabled=true;button.textContent='Comprobando…';container.setAttribute('aria-busy','true');
+  $('connectionsFeedback').textContent='Consultando la base de datos y el servicio Orión…';
+  try {
+    const data=await api('/conexiones');
+    const verified=data.filter(c=>c.estado==='operativo').length,configured=data.filter(c=>c.estado==='configurado').length;
+    $('connectionsSummary').innerHTML=[['Verificadas',verified,'Pruebas de disponibilidad correctas'],['Con credenciales',configured,'Disponibilidad externa sin verificar'],['Requieren revisión',data.filter(c=>!['operativo','configurado'].includes(c.estado)).length,'Configuración o conexión pendiente']].map(([label,value,note])=>`<div class="connection-metric"><span>${label}</span><strong>${value}</strong><small>${note}</small></div>`).join('');
+    const guides={
+      PostgreSQL:{icon:'DB',category:'Datos operativos',description:'Servicios, unidades, llamadas y configuración.',steps:'Si no responde, revisa el contenedor de PostgreSQL y la configuración de base de datos en .env.'},
+      'Orión':{icon:'OR',category:'Asistente',description:'Atención y respuestas mediante el asistente de reglas.',steps:'Revisa que el microservicio esté iniciado y que ORION_URL sea accesible desde el backend. Orión no asigna unidades automáticamente.'},
+      'Twilio Voice':{icon:'TW',category:'Telefonía',description:'Recepción de llamadas y webhooks de voz.',steps:'Configura TWILIO_ACCOUNT_SID y TWILIO_AUTH_TOKEN en .env. En Twilio, apunta el webhook de voz a POST <PUBLIC_BASE_URL>/api/twilio/voice mediante HTTPS público.'},
+      ElevenLabs:{icon:'EL',category:'Síntesis de voz',description:'Convierte las respuestas del asistente en audio.',steps:'Configura ELEVENLABS_API_KEY y ELEVENLABS_VOICE_ID en .env. Prueba la generación de audio desde la consola de Orión.'},
+      Zello:{icon:'ZE',category:'Radio y despacho',description:'Avisos de servicio mediante un adaptador genérico.',steps:'Configura ZELLO_API_URL, ZELLO_API_TOKEN y ZELLO_CHANNEL con un proveedor autorizado. Valida su API y el envío al canal; las credenciales son compartidas y el adaptador está desactivado para empresas nuevas.'},
+      'Ubicación de unidades':{icon:'GPS',category:'Seguimiento',description:'Puntos de ubicación manuales o recibidos por API.',steps:'Registra puntos desde Despacho y recorridos o conecta una fuente GPS a la API de ubicaciones. No hay seguimiento continuo sin una fuente conectada.'}
+    };
+    container.innerHTML=data.length?data.map(c=>{
+      const guide=guides[c.nombre] || {icon:'API',category:'Integración',description:c.detalle,steps:'Consulta la configuración de esta integración con el administrador.'};
+      const tone=c.estado==='operativo'?'ok':c.estado==='configurado'?'configured':c.estado==='pendiente'?'pending':c.estado==='manual / API'?'manual':'error';
+      const label=c.estado==='configurado'?'Credenciales configuradas':c.estado==='manual / API'?'Manual / API':c.estado;
+      return `<article class="card connection-card"><div class="connection-card-top"><span class="connection-icon">${guide.icon}</span><span class="connection-status connection-${tone}">${escapeHTML(label)}</span></div><p class="connection-category">${guide.category}</p><h3>${escapeHTML(c.nombre)}</h3><p>${escapeHTML(guide.description)}</p><div class="connection-evidence"><strong>${c.estado==='operativo'?'Comprobación correcta':c.estado==='configurado'?'Sin prueba externa':'Estado actual'}</strong><span>${escapeHTML(c.detalle)}</span></div><details><summary>Configuración y ayuda</summary><p>${escapeHTML(guide.steps)}</p><small>Los cambios en .env requieren recrear los servicios afectados. Las credenciales se gestionan en el servidor.</small></details></article>`;
+    }).join(''):empty('No hay integraciones disponibles.');
+    $('connectionsFeedback').textContent=`Última comprobación: ${dateTime(new Date())}. Las credenciales configuradas no garantizan que el proveedor responda.`;
+  }catch(error){
+    $('connectionsFeedback').textContent=`No se pudo comprobar: ${error.message} Puedes reintentar con Comprobar ahora.`;
+    if(container.children.length)$('connectionsFeedback').textContent+=' Los resultados visibles corresponden a la comprobación anterior.';
+  }finally{loadConnections.busy=false;button.disabled=false;button.textContent='Comprobar ahora';container.setAttribute('aria-busy','false');}
 }
 function editService(id) {
   const service=state.services.find(s=>s.id===Number(id));if(!service)return;
   $('editServiceId').value=service.id;$('editServiceInfo').textContent=`#${service.id} · ${service.origen} → ${service.destino}`;
-  $('editDriver').innerHTML=options(state.drivers.filter(d=>(d.categoria===service.categoria && d.estado==='DISPONIBLE') || d.id===service.conductor_id),'Sin asignar');$('editDriver').value=service.conductor_id || '';
+  $('editDriver').innerHTML=options(state.drivers.filter(d=>(d.categoria===service.categoria && d.estado==='DISPONIBLE' && d.chofer_id && d.conductor_activo) || d.id===service.conductor_id),'Sin asignar');$('editDriver').value=service.conductor_id || '';
   $('editDriver').disabled=['COMPLETADO','CANCELADO'].includes(service.estado);
   $('editStatus').innerHTML=[service.estado,...(transitions[service.estado] || [])].map(status=>`<option>${status}</option>`).join('');$('editFare').value=service.tarifa ?? '';$('editDialog').showModal();
 }
@@ -147,9 +196,13 @@ async function init() {
     if(button.hasAttribute('data-close'))button.closest('dialog').close();
     if(button.dataset.go)location.hash=button.dataset.go;
     if(button.dataset.edit)editService(button.dataset.edit);
+    if(button.dataset.driverEdit)openDriver(button.dataset.driverEdit);
+    if(button.dataset.driverDelete)deleteDriver(button);
     if(button.dataset.route){location.hash='despacho-flujo';$('routeDriver').value=button.dataset.route;filterServiceOptions($('routeDriver'),$('routeService'),'Todos los servicios');invalidateRoute();loadRoute();}
   });
-  $('newServiceButton').onclick=()=>$('serviceDialog').showModal();$('newDriverButton').onclick=()=>$('driverDialog').showModal();
+  $('newServiceButton').onclick=()=>$('serviceDialog').showModal();$('newDriverButton').onclick=()=>openDriver();
+  $('driverSearch').oninput=renderDrivers;$('driverFilterStatus').onchange=renderDrivers;$('driverFilterCategory').onchange=renderDrivers;
+  $('checkConnections').onclick=loadConnections;initFleet();
   $('openPosition').onclick=()=>openPosition($('routeDriver').value);$('refreshButton').onclick=async()=>{await sync();if(state.view==='conexiones')loadConnections();if(state.view==='consola-ia')loadCalls();};
   $('serviceSearch').oninput=renderServices;$('serviceStatus').onchange=renderServices;
   if($('globalSearchInput'))$('globalSearchInput').addEventListener('input',()=>{$('serviceSearch').value=$('globalSearchInput').value;renderServices();if($('globalSearchInput').value)location.hash='despacho-flujo';});
@@ -158,9 +211,9 @@ async function init() {
   $('positionDriver').onchange=()=>filterServiceOptions($('positionDriver'),$('positionService'),'Sin servicio asociado');
   $('loadRoute').onclick=loadRoute;$('exportRoute').onclick=exportRoute;$('centerMap').onclick=()=>state.map?.setView([-8.1116,-79.0287],13);
   submitForm($('serviceForm'),async()=>{const result=await api('/servicios',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData($('serviceForm'))))});$('serviceDialog').close();$('serviceForm').reset();toast(result.zello.enviado?'Servicio guardado y aviso enviado.':'Servicio guardado. Aviso Zello pendiente; asigna la unidad desde despacho.');await sync();location.hash='despacho-flujo';});
-  submitForm($('driverForm'),async()=>{await api('/conductores',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData($('driverForm'))))});$('driverDialog').close();$('driverForm').reset();toast('Unidad registrada.');await sync();});
+  submitForm($('driverForm'),async()=>{const id=$('driverId').value;await api(id?`/unidades/${id}`:'/unidades',{method:id?'PUT':'POST',body:JSON.stringify(Object.fromEntries(new FormData($('driverForm'))))});$('driverDialog').close();$('driverForm').reset();toast(id?'Unidad actualizada.':'Unidad registrada.');await sync();});
   submitForm($('editForm'),async()=>{await api(`/servicios/${$('editServiceId').value}`,{method:'PATCH',body:JSON.stringify({estado:$('editStatus').value,conductor_id:$('editDriver').value?Number($('editDriver').value):null,tarifa:$('editFare').value===''?null:Number($('editFare').value)})});$('editDialog').close();toast('Servicio actualizado.');await sync();});
-  submitForm($('positionForm'),async()=>{await api(`/conductores/${$('positionDriver').value}/posiciones`,{method:'POST',body:JSON.stringify({latitud:Number($('positionLat').value),longitud:Number($('positionLng').value),registrado_en:`${$('positionTime').value}:00-05:00`,servicio_id:$('positionService').value?Number($('positionService').value):null,fuente:'manual'})});$('positionDialog').close();toast('Ubicación guardada.');await sync();if($('routeDriver').value)await loadRoute();});
+  submitForm($('positionForm'),async()=>{await api(`/unidades/${$('positionDriver').value}/posiciones`,{method:'POST',body:JSON.stringify({latitud:Number($('positionLat').value),longitud:Number($('positionLng').value),registrado_en:`${$('positionTime').value}:00-05:00`,servicio_id:$('positionService').value?Number($('positionService').value):null,fuente:'manual'})});$('positionDialog').close();toast('Ubicación guardada.');await sync();if($('routeDriver').value)await loadRoute();});
   submitForm($('settingsForm'),async()=>{state.config=await api('/configuracion',{method:'PUT',body:JSON.stringify({empresa:$('companyName').value,intervalo_segundos:Number($('refreshSeconds').value)})});Acceso.companyName(state.config.empresa);restartTimer();toast('Configuración guardada en PostgreSQL.');});
   const updateClock=()=>{$('clock').textContent=new Intl.DateTimeFormat('es-PE',{timeZone:'America/Lima',hour:'2-digit',minute:'2-digit'}).format(new Date())+' · PE';};updateClock();setInterval(updateClock,60000);
   Mejoras.init();

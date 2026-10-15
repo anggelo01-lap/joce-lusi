@@ -54,7 +54,7 @@ router.get('/estadisticas', wrap(async (_req, res) => {
         COUNT(*) FILTER (WHERE estado='CANCELADO')::int AS cancelados,
         COALESCE(ROUND(AVG(tarifa) FILTER (WHERE estado='COMPLETADO' AND tarifa IS NOT NULL),2),0) AS tarifa_promedio
       FROM servicios WHERE creado_en >= NOW()-INTERVAL '30 days'`),
-    pool.query(`SELECT c.id, c.codigo, c.nombre, c.placa, COUNT(s.id)::int AS servicios,
+    pool.query(`SELECT c.id, c.codigo, c.codigo AS nombre, c.placa, COUNT(s.id)::int AS servicios,
         COALESCE(SUM(s.tarifa),0) AS facturado
       FROM conductores c LEFT JOIN servicios s ON s.conductor_id=c.id AND s.estado='COMPLETADO'
         AND s.finalizado_en >= NOW()-INTERVAL '30 days' GROUP BY c.id ORDER BY servicios DESC, c.id LIMIT 5`)
@@ -66,12 +66,47 @@ router.get('/llamadas/:id/conversacion', wrap(async (req, res) => {
   const { rows } = await pool.query('SELECT rol, contenido, creado_en FROM conversaciones WHERE llamada_id=$1 ORDER BY id', [req.params.id]);
   res.json(rows);
 }));
-router.post('/conductores', wrap(async (req, res) => {
-  const { codigo, nombre, telefono = '', placa, vehiculo, categoria } = req.body;
-  if (!text(codigo,30) || !text(nombre) || !text(placa,20) || !text(vehiculo) || typeof telefono !== 'string' || telefono.length>30 || !['sedan','suv','van'].includes(categoria)) throw fail(400,'Revisa los datos de la unidad.');
-  const { rows } = await pool.query(`INSERT INTO conductores(codigo,nombre,telefono,placa,vehiculo,categoria) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`, [codigo.trim(),nombre.trim(),telefono.trim(),placa.trim().toUpperCase(),vehiculo.trim(),categoria]);
+function driverData(body) {
+  const { codigo, placa, vehiculo, categoria } = body;
+  if (!text(codigo,30) || !text(placa,20) || !text(vehiculo) || !['sedan','suv','van'].includes(categoria)) throw fail(400,'Revisa los datos de la unidad.');
+  return [codigo.trim(),'','',placa.trim().toUpperCase(),vehiculo.trim(),categoria];
+}
+router.use(require('./flota'));
+router.post(['/conductores','/unidades'], wrap(async (req, res) => {
+  const { rows } = await pool.query(`INSERT INTO conductores(codigo,nombre,telefono,placa,vehiculo,categoria) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`, driverData(req.body));
   res.status(201).json(rows[0]);
 }));
+router.get(['/conductores/:id','/unidades/:id'], wrap(async (req,res) => {
+  if(!id(req.params.id)) throw fail(400,'Unidad inválida.');
+  const {rows}=await pool.query("SELECT u.*,p.nombre,p.telefono FROM conductores u LEFT JOIN personas_conductoras p ON p.id=u.chofer_id WHERE u.id=$1",[req.params.id]);
+  if(!rows.length) throw fail(404,'Unidad no encontrada.');
+  res.json(rows[0]);
+}));
+async function changeDriver(req,res,remove) {
+  if(!id(req.params.id)) throw fail(400,'Unidad inválida.');
+  const values=remove?null:driverData(req.body),db=await pool.connect();
+  try {
+    await db.query('BEGIN');
+    // Match dispatch lock order so edits/deletions cannot race assignments.
+    await db.query('LOCK TABLE servicios IN SHARE ROW EXCLUSIVE MODE');
+    const driver=(await db.query('SELECT * FROM conductores WHERE id=$1 FOR UPDATE',[req.params.id])).rows[0];
+    if(!driver) throw fail(404,'Unidad no encontrada.');
+    const services=await db.query("SELECT id FROM servicios WHERE conductor_id=$1 AND estado NOT IN ('COMPLETADO','CANCELADO')",[driver.id]);
+    if(services.rowCount) throw fail(409,'La unidad tiene un servicio activo. Finalízalo o cancélalo antes de editar o eliminar.');
+    let result;
+    if(remove) {
+      const history=await db.query('SELECT 1 FROM servicios WHERE conductor_id=$1 UNION ALL SELECT 1 FROM posiciones_unidad WHERE conductor_id=$1 LIMIT 1',[driver.id]);
+      if(history.rowCount) throw fail(409,'No se puede eliminar una unidad con servicios o ubicaciones registrados. Su historial debe conservarse.');
+      await db.query('DELETE FROM conductores WHERE id=$1',[driver.id]);
+      result={eliminado:true,id:driver.id};
+    }else{
+      result=(await db.query('UPDATE conductores SET codigo=$1,placa=$2,vehiculo=$3,categoria=$4 WHERE id=$5 RETURNING *',[values[0],values[3],values[4],values[5],driver.id])).rows[0];
+    }
+    await db.query('COMMIT');res.json(result);
+  }catch(error){await db.query('ROLLBACK');throw error;}finally{db.release();}
+}
+router.put(['/conductores/:id','/unidades/:id'],wrap((req,res)=>changeDriver(req,res,false)));
+router.delete(['/conductores/:id','/unidades/:id'],wrap((req,res)=>changeDriver(req,res,true)));
 router.patch('/servicios/:id', wrap(async (req, res) => {
   if (!id(req.params.id)) throw fail(400,'Servicio inválido.');
   const { estado, conductor_id, tarifa } = req.body;
@@ -89,23 +124,27 @@ router.patch('/servicios/:id', wrap(async (req, res) => {
     if (estado==='SOLICITADO' && driverId) throw fail(400,'Selecciona ASIGNADO para asignar una unidad.');
     if (['COMPLETADO','CANCELADO'].includes(service.estado) && driverId != service.conductor_id) throw fail(409,'No se puede reasignar un servicio finalizado.');
     if (!['SOLICITADO','CANCELADO'].includes(estado) && !driverId) throw fail(400,'Asigna una unidad antes de continuar.');
+    let assignedPerson=null;
     if (driverId) {
       const driver = (await db.query('SELECT * FROM conductores WHERE id=$1 FOR UPDATE',[driverId])).rows[0];
       if (!driver) throw fail(404,'Unidad no encontrada.');
       if (!['COMPLETADO','CANCELADO'].includes(estado)) {
+        assignedPerson=(await db.query('SELECT * FROM personas_conductoras WHERE id=$1 AND activo=true',[driver.chofer_id])).rows[0];
+        if(!assignedPerson) throw fail(409,'Asigna un conductor activo a la unidad antes de despachar.');
         if (driver.categoria!==service.categoria) throw fail(409,'La categoría de la unidad no coincide con el servicio.');
         const busy = await db.query(`SELECT id FROM servicios WHERE conductor_id=$1 AND id<>$2 AND estado NOT IN ('COMPLETADO','CANCELADO')`,[driverId,service.id]);
         if (busy.rowCount || (driverId != service.conductor_id && driver.estado!=='DISPONIBLE')) throw fail(409,'La unidad no está disponible.');
       }
     }
-    const result = await db.query(`UPDATE servicios SET estado=$1::varchar(40), conductor_id=$2, tarifa=COALESCE($3,tarifa), actualizado_en=NOW(), finalizado_en=CASE WHEN $1::varchar(40)='COMPLETADO' THEN COALESCE(finalizado_en,NOW()) ELSE finalizado_en END WHERE id=$4 RETURNING *`,[estado,driverId,tarifa,service.id]);
+    const changed=driverId != service.conductor_id;
+    const result = await db.query(`UPDATE servicios SET estado=$1::varchar(40), conductor_id=$2, tarifa=COALESCE($3,tarifa), actualizado_en=NOW(), finalizado_en=CASE WHEN $1::varchar(40)='COMPLETADO' THEN COALESCE(finalizado_en,NOW()) ELSE finalizado_en END, chofer_id=$5,conductor_nombre=$6 WHERE id=$4 RETURNING *`,[estado,driverId,tarifa,service.id,changed?assignedPerson?.id || null:service.chofer_id,changed?assignedPerson?.nombre || null:service.conductor_nombre]);
     for (const driver of new Set([service.conductor_id,driverId].filter(Boolean))) {
       await db.query(`UPDATE conductores SET estado=CASE WHEN EXISTS(SELECT 1 FROM servicios WHERE conductor_id=$1 AND estado NOT IN ('COMPLETADO','CANCELADO')) THEN 'OCUPADO' ELSE 'DISPONIBLE' END WHERE id=$1`,[driver]);
     }
     await db.query('COMMIT'); res.json(result.rows[0]);
   } catch (error) { await db.query('ROLLBACK'); throw error; } finally { db.release(); }
 }));
-router.post('/conductores/:id/posiciones', wrap(async (req, res) => {
+router.post(['/conductores/:id/posiciones','/unidades/:id/posiciones'], wrap(async (req, res) => {
   const { latitud, longitud, registrado_en, servicio_id = null, fuente = 'manual' } = req.body;
   if (!id(req.params.id) || typeof latitud !== 'number' || !Number.isFinite(latitud) || Math.abs(latitud)>90 || typeof longitud !== 'number' || !Number.isFinite(longitud) || Math.abs(longitud)>180 || !['manual','gps','movil'].includes(fuente) || (servicio_id!=null && !id(servicio_id))) throw fail(400,'Coordenadas, fuente o identificador inválidos.');
   const date = registrado_en == null ? new Date() : new Date(registrado_en);
@@ -124,7 +163,7 @@ router.post('/conductores/:id/posiciones', wrap(async (req, res) => {
     await db.query('COMMIT'); res.status(201).json(rows[0]);
   } catch (error) { await db.query('ROLLBACK'); throw error; } finally { db.release(); }
 }));
-router.get('/conductores/:id/recorrido', wrap(async (req, res) => {
+router.get(['/conductores/:id/recorrido','/unidades/:id/recorrido'], wrap(async (req, res) => {
   const { fecha, servicio_id } = req.query;
   if (!id(req.params.id) || typeof fecha !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !Number.isFinite(Date.parse(fecha)) || new Date(fecha).toISOString().slice(0,10)!==fecha || (servicio_id != null && !id(servicio_id))) throw fail(400,'Indica una fecha válida AAAA-MM-DD y una unidad.');
   const driver = await pool.query('SELECT id FROM conductores WHERE id=$1',[req.params.id]);

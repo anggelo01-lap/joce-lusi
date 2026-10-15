@@ -10,11 +10,11 @@ router.get('/health', async (_req,res) => {
     res.json({ok:true,sistema:'PlatinumVIP',database:true,ahora:db.rows[0].ahora});
   } catch (_) { res.status(503).json({ok:false,database:false,error:'Base de datos no disponible.'}); }
 });
-router.get('/conductores', wrap(async (_req,res) => {
-  const { rows } = await pool.query('SELECT * FROM conductores ORDER BY id'); res.json(rows);
+router.get(['/conductores','/unidades'], wrap(async (_req,res) => {
+  const { rows } = await pool.query("SELECT u.*,COALESCE(p.nombre,'Sin conductor') AS nombre,COALESCE(p.telefono,'') AS telefono,p.activo AS conductor_activo FROM conductores u LEFT JOIN personas_conductoras p ON p.id=u.chofer_id ORDER BY u.id"); res.json(rows);
 }));
 router.get('/servicios', wrap(async (_req,res) => {
-  const { rows } = await pool.query(`SELECT s.*, c.nombre AS cliente, c.telefono AS telefono_cliente, d.nombre AS conductor, d.placa FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN conductores d ON d.id=s.conductor_id ORDER BY s.id DESC LIMIT 100`); res.json(rows);
+  const { rows } = await pool.query(`SELECT s.*, c.nombre AS cliente, c.telefono AS telefono_cliente, s.conductor_nombre AS conductor, d.placa FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN conductores d ON d.id=s.conductor_id ORDER BY s.id DESC LIMIT 100`); res.json(rows);
 }));
 router.post('/servicios', wrap(async (req,res) => {
   const {nombre='Cliente',telefono,origen,destino,categoria='sedan'} = req.body;

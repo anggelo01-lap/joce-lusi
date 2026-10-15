@@ -156,7 +156,7 @@ router.delete('/empresas/:id',roles('superadmin'),wrap(async(req,res)=>{
     if(company.esquema==='public' || id===req.access.empresa_activa)throw fail(409,'No puedes eliminar la empresa original ni la empresa activa. Abre otra empresa primero.');
     if(!/^empresa_[0-9]+$/.test(company.esquema))throw fail(409,'Esquema de empresa inválido.');
     if((await client.query('SELECT 1 FROM public.cuentas WHERE empresa_id=$1',[id])).rowCount)throw fail(409,'Elimina las cuentas de esta empresa antes de eliminarla.');
-    const tables=['clientes','conductores','llamadas','servicios','conversaciones','notificaciones_zello','posiciones_unidad'];
+    const tables=['clientes','conductores','personas_conductoras','llamadas','servicios','conversaciones','notificaciones_zello','posiciones_unidad'];
     await client.query(`LOCK TABLE ${tables.map(t=>`"${company.esquema}".${t}`).join(',')} IN EXCLUSIVE MODE`);
     for(const table of tables)if((await client.query(`SELECT 1 FROM "${company.esquema}".${table} LIMIT 1`)).rowCount)throw fail(409,'La empresa tiene datos operativos. No se puede eliminar.');
     await client.query('DELETE FROM public.sesiones WHERE empresa_id=$1',[id]);
