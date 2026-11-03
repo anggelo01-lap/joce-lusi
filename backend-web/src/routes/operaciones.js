@@ -1,208 +1,365 @@
 const express = require('express');
-const axios = require('axios');
 const pool = require('../db/pool');
-const { responder } = require('../services/orion.service');
 const router = express.Router();
-const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res)).catch(next);
-const fail = (status, message) => Object.assign(new Error(message), { status });
-const id = value => Number.isSafeInteger(Number(value)) && Number(value) > 0;
-const text = (value, max = 120) => typeof value === 'string' && value.trim().length > 0 && value.trim().length <= max;
-const estados = ['SOLICITADO', 'ASIGNADO', 'EN_RECOJO', 'EN_CURSO', 'COMPLETADO', 'CANCELADO'];
 
-router.get('/configuracion', wrap(async (_req, res) => {
-  const { rows } = await pool.query('SELECT datos, actualizado_en FROM configuracion_operativa WHERE id=1');
-  res.json({ ...rows[0].datos, actualizado_en: rows[0].actualizado_en });
-}));
-router.put('/configuracion', wrap(async (req, res) => {
-  if (req.access && !['superadmin','admin'].includes(req.access.rol)) throw fail(403, 'Solo el administrador puede cambiar la configuración de la empresa.');
-  const { empresa, intervalo_segundos } = req.body;
-  if (!text(empresa) || !Number.isInteger(intervalo_segundos) || intervalo_segundos < 15 || intervalo_segundos > 300)
-    throw fail(400, 'Empresa e intervalo (15–300 segundos) inválidos.');
-  const { rows } = await pool.query(`UPDATE configuracion_operativa SET datos=datos || $1::jsonb, actualizado_en=NOW() WHERE id=1 RETURNING datos`, [JSON.stringify({ empresa: empresa.trim(), intervalo_segundos })]);
-  if(req.access) await pool.raw.query('UPDATE public.empresas SET nombre=$1 WHERE id=$2',[empresa.trim(),req.access.empresa_activa]);
-  res.json(rows[0].datos);
-}));
+const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res)).catch(next);
+
+// ============================================================================
+// 1. PANEL PRINCIPAL: Resumen y Métricas Oficiales
+// ============================================================================
 router.get('/resumen', wrap(async (_req, res) => {
-  const [services, drivers, calls, hours] = await Promise.all([
-    pool.query(`SELECT COUNT(*) FILTER (WHERE estado NOT IN ('COMPLETADO','CANCELADO'))::int AS activos,
-      COUNT(*) FILTER (WHERE (creado_en AT TIME ZONE 'America/Lima')::date=(NOW() AT TIME ZONE 'America/Lima')::date)::int AS hoy,
-      COUNT(*) FILTER (WHERE estado='SOLICITADO')::int AS pendientes,
-      COALESCE(SUM(tarifa) FILTER (WHERE estado='COMPLETADO' AND (finalizado_en AT TIME ZONE 'America/Lima')::date=(NOW() AT TIME ZONE 'America/Lima')::date),0) AS facturado_hoy,
-      COUNT(*) FILTER (WHERE estado='COMPLETADO' AND tarifa IS NULL)::int AS sin_tarifa,
-      COUNT(*) FILTER (WHERE estado='SOLICITADO' AND creado_en < NOW()-INTERVAL '5 minutes')::int AS esperando_mucho,
-      COUNT(*) FILTER (WHERE estado='CANCELADO' AND (actualizado_en AT TIME ZONE 'America/Lima')::date=(NOW() AT TIME ZONE 'America/Lima')::date)::int AS cancelados_hoy,
-      COUNT(*) FILTER (WHERE estado='COMPLETADO' AND (finalizado_en AT TIME ZONE 'America/Lima')::date=(NOW() AT TIME ZONE 'America/Lima')::date)::int AS completados_hoy FROM servicios`),
-    pool.query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE estado='DISPONIBLE')::int AS disponibles,
-      COUNT(*) FILTER (WHERE ubicacion_en >= NOW()-INTERVAL '5 minutes')::int AS gps_reciente FROM conductores`),
-    pool.query(`SELECT COUNT(*)::int AS hoy FROM llamadas WHERE (inicio AT TIME ZONE 'America/Lima')::date=(NOW() AT TIME ZONE 'America/Lima')::date`),
-    pool.query(`SELECT EXTRACT(HOUR FROM creado_en AT TIME ZONE 'America/Lima')::int AS hora, COUNT(*)::int AS cantidad FROM servicios WHERE (creado_en AT TIME ZONE 'America/Lima')::date=(NOW() AT TIME ZONE 'America/Lima')::date GROUP BY 1 ORDER BY 1`)
-  ]);
-  res.json({ servicios: services.rows[0], unidades: drivers.rows[0], llamadas: calls.rows[0], horas: hours.rows, actualizado_en: new Date().toISOString() });
+  const store = pool.store;
+  const day = value => { const d = new Date(value); return Number.isNaN(d.getTime()) ? null : new Intl.DateTimeFormat('en-CA', {timeZone:'America/Lima'}).format(d); };
+  const today = day(new Date());
+  const status = s => String(s.estado || '').toUpperCase().replaceAll(' ', '_');
+  const services = store.servicios;
+  const daily = services.filter(s => day(s.creado_en) === today);
+  const completed = daily.filter(s => status(s) === 'COMPLETADO');
+  res.json({
+    fuente: 'memoria', persistente: false,
+    servicios: {
+      activos: services.filter(s => !['COMPLETADO','CANCELADO'].includes(status(s))).length,
+      hoy: daily.length,
+      completados_hoy: completed.length,
+      cancelados_hoy: daily.filter(s => status(s) === 'CANCELADO').length,
+      facturado_hoy: completed.reduce((sum,s) => sum + (Number(s.tarifa) || 0), 0)
+    },
+    unidades: {total:store.conductores.length, disponibles:store.conductores.filter(s => status(s) === 'DISPONIBLE').length},
+    llamadas: {hoy:store.llamadas.filter(s => day(s.inicio) === today).length},
+    actualizado_en: new Date().toISOString()
+  });
 }));
-router.get('/estadisticas', wrap(async (_req, res) => {
-  const lima = "(NOW() AT TIME ZONE 'America/Lima')::date";
-  const [semana, categorias, estados, tiempos, unidades] = await Promise.all([
-    pool.query(`SELECT d::date AS dia, COALESCE(COUNT(s.id),0)::int AS servicios,
-        COALESCE(SUM(s.tarifa) FILTER (WHERE s.estado='COMPLETADO'),0) AS facturado
-      FROM generate_series(${lima}-6, ${lima}, '1 day') d
-      LEFT JOIN servicios s ON (s.creado_en AT TIME ZONE 'America/Lima')::date = d::date GROUP BY 1 ORDER BY 1`),
-    pool.query(`SELECT COALESCE(categoria,'sin categoría') AS categoria, COUNT(*)::int AS cantidad FROM servicios
-      WHERE creado_en >= NOW()-INTERVAL '30 days' GROUP BY 1 ORDER BY 2 DESC`),
-    pool.query(`SELECT estado, COUNT(*)::int AS cantidad FROM servicios GROUP BY 1`),
-    pool.query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (finalizado_en-creado_en))/60))::int AS minutos_promedio,
-        COUNT(*) FILTER (WHERE estado='COMPLETADO')::int AS completados,
-        COUNT(*) FILTER (WHERE estado='CANCELADO')::int AS cancelados,
-        COALESCE(ROUND(AVG(tarifa) FILTER (WHERE estado='COMPLETADO' AND tarifa IS NOT NULL),2),0) AS tarifa_promedio
-      FROM servicios WHERE creado_en >= NOW()-INTERVAL '30 days'`),
-    pool.query(`SELECT c.id, c.codigo, c.codigo AS nombre, c.placa, COUNT(s.id)::int AS servicios,
-        COALESCE(SUM(s.tarifa),0) AS facturado
-      FROM conductores c LEFT JOIN servicios s ON s.conductor_id=c.id AND s.estado='COMPLETADO'
-        AND s.finalizado_en >= NOW()-INTERVAL '30 days' GROUP BY c.id ORDER BY servicios DESC, c.id LIMIT 5`)
-  ]);
-  res.json({ semana: semana.rows, categorias: categorias.rows, estados: estados.rows, rendimiento: tiempos.rows[0], unidades: unidades.rows });
+
+// ============================================================================
+// 2. CRUD SERVICIOS / SOLICITUDES
+// ============================================================================
+router.get('/servicios', wrap(async (_req, res) => {
+  res.json(pool.store.servicios);
 }));
-router.get('/llamadas/:id/conversacion', wrap(async (req, res) => {
-  if (!id(req.params.id)) throw fail(400, 'Llamada inválida.');
-  const { rows } = await pool.query('SELECT rol, contenido, creado_en FROM conversaciones WHERE llamada_id=$1 ORDER BY id', [req.params.id]);
-  res.json(rows);
+
+router.get('/servicios/:id', wrap(async (req, res) => {
+  const s = pool.store.servicios.find(x => x.id === Number(req.params.id));
+  if (!s) return res.status(404).json({ error: 'Servicio no encontrado.' });
+  res.json(s);
 }));
-function driverData(body) {
-  const { codigo, placa, vehiculo, categoria } = body;
-  if (!text(codigo,30) || !text(placa,20) || !text(vehiculo) || !['sedan','suv','van'].includes(categoria)) throw fail(400,'Revisa los datos de la unidad.');
-  return [codigo.trim(),'','',placa.trim().toUpperCase(),vehiculo.trim(),categoria];
-}
-router.use(require('./flota'));
-router.post(['/conductores','/unidades'], wrap(async (req, res) => {
-  const { rows } = await pool.query(`INSERT INTO conductores(codigo,nombre,telefono,placa,vehiculo,categoria) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`, driverData(req.body));
-  res.status(201).json(rows[0]);
+
+// CREATE
+router.post('/servicios', wrap(async (req, res) => {
+  const store = pool.store;
+  const {
+    cliente = '',
+    telefono_cliente = '',
+    origen = '',
+    destino = '',
+    referencia = '',
+    unidad_codigo = 'U-12',
+    categoria = 'sedan',
+    estado = 'Asignado',
+    tarifa = 0
+  } = req.body;
+
+  if (![cliente,telefono_cliente,origen,destino].every(v=>typeof v==='string' && v.trim() && v.length<=500) || !Number.isFinite(Number(tarifa)) || Number(tarifa)<0) return res.status(400).json({error:'Revisa cliente, contacto, direcciones y tarifa.'});
+  const digits=value=>String(value || '').replace(/\D/g,'');
+  let passenger=store.clientes.find(p=>digits(p.telefono)===digits(telefono_cliente));
+  if(!passenger){passenger={id:Math.max(0,...store.clientes.map(p=>p.id))+1,nombre:cliente,telefono:telefono_cliente,tipo:'Telefonico',notas:'',creado_en:new Date(),total_viajes:0};store.clientes.push(passenger);}
+  const linkedCall=req.body.llamada_id == null ? null : store.llamadas.find(c=>c.id===Number(req.body.llamada_id) && digits(c.telefono_origen)===digits(telefono_cliente));
+  if(req.body.llamada_id != null && !linkedCall)return res.status(400).json({error:'La llamada no corresponde al contacto.'});
+  const nextId = (Math.max(...store.servicios.map(s => s.id), 48)) + 1;
+  const nuevo = {
+    id: nextId,
+    codigo: `SRV-${new Date().getFullYear()}-${String(nextId).padStart(4, '0')}`,
+    cliente_id: passenger.id,
+    cliente,
+    telefono_cliente,
+    conductor_id: null,
+    conductor: null,
+    placa: null,
+    unidad_codigo: null,
+    llamada_id: linkedCall?.id || null,
+    origen,
+    destino,
+    referencia,
+    categoria,
+    estado: 'Solicitado',
+    tarifa: Number(tarifa),
+    creado_en: new Date(),
+    actualizado_en: new Date()
+  };
+
+  store.servicios.unshift(nuevo);
+
+  store.auditoria.unshift({
+    id: store.auditoria.length + 1,
+    usuario: 'Administrador',
+    rol: 'admin',
+    modulo: 'Solicitudes',
+    accion: `Servicio ${nuevo.codigo} creado (CRUD Admin)`,
+    detalle: `Pasajero: ${nuevo.cliente}. ${nuevo.origen} -> ${nuevo.destino}`,
+    ip: '127.0.0.1',
+    estado: 'OK',
+    creado_en: new Date()
+  });
+
+  res.status(201).json(nuevo);
 }));
-router.get(['/conductores/:id','/unidades/:id'], wrap(async (req,res) => {
-  if(!id(req.params.id)) throw fail(400,'Unidad inválida.');
-  const {rows}=await pool.query("SELECT u.*,p.nombre,p.telefono FROM conductores u LEFT JOIN personas_conductoras p ON p.id=u.chofer_id WHERE u.id=$1",[req.params.id]);
-  if(!rows.length) throw fail(404,'Unidad no encontrada.');
-  res.json(rows[0]);
+
+// UPDATE (PUT)
+router.put('/servicios/:id', wrap(async (req, res) => {
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const idx = store.servicios.findIndex(s => s.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Servicio no encontrado.' });
+
+  const prev = store.servicios[idx];
+  if(req.body.unidad_codigo && req.body.unidad_codigo !== prev.unidad_codigo)return res.status(409).json({error:'Asigna la unidad desde las respuestas de disponibilidad.'});
+  if(req.body.tarifa !== undefined && (!Number.isFinite(Number(req.body.tarifa)) || Number(req.body.tarifa)<0))return res.status(400).json({error:'Tarifa invalida.'});
+
+  const updated = {
+    ...prev,
+    cliente: req.body.cliente !== undefined ? req.body.cliente : prev.cliente,
+    telefono_cliente: req.body.telefono_cliente !== undefined ? req.body.telefono_cliente : prev.telefono_cliente,
+    origen: req.body.origen !== undefined ? req.body.origen : prev.origen,
+    destino: req.body.destino !== undefined ? req.body.destino : prev.destino,
+    unidad_codigo: req.body.unidad_codigo !== undefined ? req.body.unidad_codigo : prev.unidad_codigo,
+    estado: req.body.estado !== undefined ? req.body.estado : prev.estado,
+    tarifa: req.body.tarifa !== undefined ? Number(req.body.tarifa) : prev.tarifa,
+    referencia: req.body.referencia !== undefined ? req.body.referencia : prev.referencia,
+    actualizado_en: new Date()
+  };
+
+  store.servicios[idx] = updated;
+  if(['COMPLETADO','CANCELADO'].includes(String(updated.estado).toUpperCase()) && updated.conductor_id){const driver=store.conductores.find(c=>c.id===updated.conductor_id);if(driver)driver.estado='DISPONIBLE';}
+
+
+  store.auditoria.unshift({
+    id: store.auditoria.length + 1,
+    usuario: 'Administrador',
+    rol: 'admin',
+    modulo: 'Solicitudes',
+    accion: `Servicio ${updated.codigo} actualizado (CRUD Admin)`,
+    detalle: `Estado: ${updated.estado}, Unidad: ${updated.unidad_codigo}, Tarifa: S/${updated.tarifa}`,
+    ip: '127.0.0.1',
+    estado: 'OK',
+    creado_en: new Date()
+  });
+
+  res.json(updated);
 }));
-async function changeDriver(req,res,remove) {
-  if(!id(req.params.id)) throw fail(400,'Unidad inválida.');
-  const values=remove?null:driverData(req.body),db=await pool.connect();
-  try {
-    await db.query('BEGIN');
-    // Match dispatch lock order so edits/deletions cannot race assignments.
-    await db.query('LOCK TABLE servicios IN SHARE ROW EXCLUSIVE MODE');
-    const driver=(await db.query('SELECT * FROM conductores WHERE id=$1 FOR UPDATE',[req.params.id])).rows[0];
-    if(!driver) throw fail(404,'Unidad no encontrada.');
-    const services=await db.query("SELECT id FROM servicios WHERE conductor_id=$1 AND estado NOT IN ('COMPLETADO','CANCELADO')",[driver.id]);
-    if(services.rowCount) throw fail(409,'La unidad tiene un servicio activo. Finalízalo o cancélalo antes de editar o eliminar.');
-    let result;
-    if(remove) {
-      const history=await db.query('SELECT 1 FROM servicios WHERE conductor_id=$1 UNION ALL SELECT 1 FROM posiciones_unidad WHERE conductor_id=$1 LIMIT 1',[driver.id]);
-      if(history.rowCount) throw fail(409,'No se puede eliminar una unidad con servicios o ubicaciones registrados. Su historial debe conservarse.');
-      await db.query('DELETE FROM conductores WHERE id=$1',[driver.id]);
-      result={eliminado:true,id:driver.id};
-    }else{
-      result=(await db.query('UPDATE conductores SET codigo=$1,placa=$2,vehiculo=$3,categoria=$4 WHERE id=$5 RETURNING *',[values[0],values[3],values[4],values[5],driver.id])).rows[0];
-    }
-    await db.query('COMMIT');res.json(result);
-  }catch(error){await db.query('ROLLBACK');throw error;}finally{db.release();}
-}
-router.put(['/conductores/:id','/unidades/:id'],wrap((req,res)=>changeDriver(req,res,false)));
-router.delete(['/conductores/:id','/unidades/:id'],wrap((req,res)=>changeDriver(req,res,true)));
+
+// PATCH (Partial Update / Estado rápido)
 router.patch('/servicios/:id', wrap(async (req, res) => {
-  if (!id(req.params.id)) throw fail(400,'Servicio inválido.');
-  const { estado, conductor_id, tarifa } = req.body;
-  if (!estados.includes(estado) || (conductor_id != null && !id(conductor_id)) || (tarifa != null && (typeof tarifa !== 'number' || !Number.isFinite(tarifa) || tarifa < 0 || tarifa > 99999999))) throw fail(400,'Estado, conductor o tarifa inválidos.');
-  const db = await pool.connect();
-  try {
-    await db.query('BEGIN');
-    // Serialize assignments and terminal transitions to prevent double dispatch.
-    await db.query('LOCK TABLE servicios IN SHARE ROW EXCLUSIVE MODE');
-    const service = (await db.query('SELECT * FROM servicios WHERE id=$1 FOR UPDATE',[req.params.id])).rows[0];
-    if (!service) throw fail(404,'Servicio no encontrado.');
-    const transitions = { SOLICITADO:['ASIGNADO','CANCELADO'], ASIGNADO:['EN_RECOJO','CANCELADO'], EN_RECOJO:['EN_CURSO','CANCELADO'], EN_CURSO:['COMPLETADO','CANCELADO'], COMPLETADO:[], CANCELADO:[] };
-    if (estado!==service.estado && !(transitions[service.estado] || []).includes(estado)) throw fail(409,'El cambio de estado no corresponde al flujo del servicio.');
-    const driverId = conductor_id == null ? service.conductor_id : conductor_id;
-    if (estado==='SOLICITADO' && driverId) throw fail(400,'Selecciona ASIGNADO para asignar una unidad.');
-    if (['COMPLETADO','CANCELADO'].includes(service.estado) && driverId != service.conductor_id) throw fail(409,'No se puede reasignar un servicio finalizado.');
-    if (!['SOLICITADO','CANCELADO'].includes(estado) && !driverId) throw fail(400,'Asigna una unidad antes de continuar.');
-    let assignedPerson=null;
-    if (driverId) {
-      const driver = (await db.query('SELECT * FROM conductores WHERE id=$1 FOR UPDATE',[driverId])).rows[0];
-      if (!driver) throw fail(404,'Unidad no encontrada.');
-      if (!['COMPLETADO','CANCELADO'].includes(estado)) {
-        assignedPerson=(await db.query('SELECT * FROM personas_conductoras WHERE id=$1 AND activo=true',[driver.chofer_id])).rows[0];
-        if(!assignedPerson) throw fail(409,'Asigna un conductor activo a la unidad antes de despachar.');
-        if (driver.categoria!==service.categoria) throw fail(409,'La categoría de la unidad no coincide con el servicio.');
-        const busy = await db.query(`SELECT id FROM servicios WHERE conductor_id=$1 AND id<>$2 AND estado NOT IN ('COMPLETADO','CANCELADO')`,[driverId,service.id]);
-        if (busy.rowCount || (driverId != service.conductor_id && driver.estado!=='DISPONIBLE')) throw fail(409,'La unidad no está disponible.');
-      }
-    }
-    const changed=driverId != service.conductor_id;
-    const result = await db.query(`UPDATE servicios SET estado=$1::varchar(40), conductor_id=$2, tarifa=COALESCE($3,tarifa), actualizado_en=NOW(), finalizado_en=CASE WHEN $1::varchar(40)='COMPLETADO' THEN COALESCE(finalizado_en,NOW()) ELSE finalizado_en END, chofer_id=$5,conductor_nombre=$6 WHERE id=$4 RETURNING *`,[estado,driverId,tarifa,service.id,changed?assignedPerson?.id || null:service.chofer_id,changed?assignedPerson?.nombre || null:service.conductor_nombre]);
-    for (const driver of new Set([service.conductor_id,driverId].filter(Boolean))) {
-      await db.query(`UPDATE conductores SET estado=CASE WHEN EXISTS(SELECT 1 FROM servicios WHERE conductor_id=$1 AND estado NOT IN ('COMPLETADO','CANCELADO')) THEN 'OCUPADO' ELSE 'DISPONIBLE' END WHERE id=$1`,[driver]);
-    }
-    await db.query('COMMIT'); res.json(result.rows[0]);
-  } catch (error) { await db.query('ROLLBACK'); throw error; } finally { db.release(); }
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const servicio = store.servicios.find(s => s.id === id);
+  if (!servicio) return res.status(404).json({ error: 'Servicio no encontrado.' });
+
+  if (req.body.estado) servicio.estado = req.body.estado;
+  if (req.body.unidad_codigo) servicio.unidad_codigo = req.body.unidad_codigo;
+  if (req.body.tarifa !== undefined) servicio.tarifa = Number(req.body.tarifa);
+  servicio.actualizado_en = new Date();
+
+  res.json(servicio);
 }));
-router.post(['/conductores/:id/posiciones','/unidades/:id/posiciones'], wrap(async (req, res) => {
-  const { latitud, longitud, registrado_en, servicio_id = null, fuente = 'manual' } = req.body;
-  if (!id(req.params.id) || typeof latitud !== 'number' || !Number.isFinite(latitud) || Math.abs(latitud)>90 || typeof longitud !== 'number' || !Number.isFinite(longitud) || Math.abs(longitud)>180 || !['manual','gps','movil'].includes(fuente) || (servicio_id!=null && !id(servicio_id))) throw fail(400,'Coordenadas, fuente o identificador inválidos.');
-  const date = registrado_en == null ? new Date() : new Date(registrado_en);
-  if ((registrado_en != null && (typeof registrado_en !== 'string' || !/(Z|[+-]\d{2}:\d{2})$/.test(registrado_en))) || !Number.isFinite(date.getTime()) || date.getTime()>Date.now()+60000) throw fail(400,'Fecha inválida: usa ISO 8601 con zona horaria y sin fechas futuras.');
-  const db = await pool.connect();
-  try {
-    await db.query('BEGIN');
-    const driver = await db.query('SELECT id FROM conductores WHERE id=$1 FOR UPDATE',[req.params.id]);
-    if (!driver.rowCount) throw fail(404,'Unidad no encontrada.');
-    if (servicio_id!=null) {
-      const service = await db.query('SELECT id FROM servicios WHERE id=$1 AND conductor_id=$2',[servicio_id,req.params.id]);
-      if (!service.rowCount) throw fail(400,'El servicio no pertenece a esta unidad.');
-    }
-    const { rows } = await db.query(`INSERT INTO posiciones_unidad(conductor_id,servicio_id,latitud,longitud,registrado_en,fuente) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`,[req.params.id,servicio_id,latitud,longitud,date,fuente]);
-    await db.query(`UPDATE conductores SET latitud=$1,longitud=$2,ubicacion_en=$3 WHERE id=$4 AND (ubicacion_en IS NULL OR ubicacion_en <= $3)`,[latitud,longitud,date,req.params.id]);
-    await db.query('COMMIT'); res.status(201).json(rows[0]);
-  } catch (error) { await db.query('ROLLBACK'); throw error; } finally { db.release(); }
+
+// DELETE
+router.delete('/servicios/:id', wrap(async (req, res) => {
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const idx = store.servicios.findIndex(s => s.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Servicio no encontrado.' });
+
+  const [deleted] = store.servicios.splice(idx, 1);
+
+  store.auditoria.unshift({
+    id: store.auditoria.length + 1,
+    usuario: 'Administrador',
+    rol: 'admin',
+    modulo: 'Solicitudes',
+    accion: `Servicio ${deleted.codigo} eliminado (CRUD Admin)`,
+    detalle: `Pasajero: ${deleted.cliente}`,
+    ip: '127.0.0.1',
+    estado: 'OK',
+    creado_en: new Date()
+  });
+
+  res.json({ ok: true, deleted_id: id });
 }));
-router.get(['/conductores/:id/recorrido','/unidades/:id/recorrido'], wrap(async (req, res) => {
-  const { fecha, servicio_id } = req.query;
-  if (!id(req.params.id) || typeof fecha !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !Number.isFinite(Date.parse(fecha)) || new Date(fecha).toISOString().slice(0,10)!==fecha || (servicio_id != null && !id(servicio_id))) throw fail(400,'Indica una fecha válida AAAA-MM-DD y una unidad.');
-  const driver = await pool.query('SELECT id FROM conductores WHERE id=$1',[req.params.id]);
-  if (!driver.rowCount) throw fail(404,'Unidad no encontrada.');
-  const { rows } = await pool.query(`SELECT * FROM posiciones_unidad WHERE conductor_id=$1 AND registrado_en >= ($2::date::timestamp AT TIME ZONE 'America/Lima') AND registrado_en < (($2::date+1)::timestamp AT TIME ZONE 'America/Lima') AND ($3::int IS NULL OR servicio_id=$3) ORDER BY registrado_en,id LIMIT 20001`,[req.params.id,fecha,servicio_id || null]);
-  res.json({ puntos:rows.slice(0,20000), truncado:rows.length>20000, fecha, zona_horaria:'America/Lima' });
+
+// ============================================================================
+// 3. CRUD CONDUCTORES Y UNIDADES
+// ============================================================================
+router.get(['/conductores', '/unidades'], wrap(async (_req, res) => {
+  res.json(pool.store.conductores);
 }));
-router.get('/llamadas', wrap(async (_req, res) => {
-  const { rows } = await pool.query(`SELECT l.*, c.nombre AS cliente FROM llamadas l LEFT JOIN clientes c ON c.id=l.cliente_id ORDER BY l.id DESC LIMIT 100`); res.json(rows);
+
+router.post(['/conductores', '/unidades'], wrap(async (req, res) => {
+  const store = pool.store;
+  const { codigo, nombre, telefono, placa, vehiculo, categoria = 'sedan' } = req.body;
+  if (![codigo,nombre,telefono,placa,vehiculo].every(v=>typeof v==='string' && v.trim() && v.length<=150)) return res.status(400).json({ error: 'Código, nombre y placa son requeridos.' });
+
+  const nuevo = {
+    id: Math.max(0, ...store.conductores.map(c=>c.id)) + 1,
+    codigo,
+    nombre,
+    telefono: telefono,
+    placa: placa.toUpperCase(),
+    vehiculo: vehiculo,
+    categoria,
+    canal_zello: 'taxistas-platinum',
+    zello_usuario: codigo.toLowerCase().replace(/ /g, '.'),
+    estado: 'DISPONIBLE',
+    latitud: null,
+    longitud: null,
+    ubicacion_en: null,
+    total_servicios: 0,
+    calificacion: 5.0
+  };
+
+  store.conductores.unshift(nuevo);
+  res.status(201).json(nuevo);
 }));
-router.post('/orion/chat', wrap(async (req, res) => {
-  if (!text(req.body.texto,2000)) throw fail(400,'Escribe un mensaje de hasta 2000 caracteres.');
-  try { const datos = req.body.datos && typeof req.body.datos === 'object' && !Array.isArray(req.body.datos) ? req.body.datos : {};
-    res.json(await responder(req.body.texto,{ ciudad:'Trujillo',pais:'Perú',canal:'dashboard',datos })); }
-  catch (_) { throw fail(503,'Orión no responde. Revisa el microservicio.'); }
+
+router.put(['/conductores/:id', '/unidades/:id'], wrap(async (req, res) => {
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const c = store.conductores.find(x => x.id === id);
+  if (!c) return res.status(404).json({ error: 'Unidad no encontrada.' });
+
+  if (req.body.nombre) c.nombre = req.body.nombre;
+  if (req.body.codigo) c.codigo = req.body.codigo;
+  if (req.body.placa) c.placa = req.body.placa.toUpperCase();
+  if (req.body.vehiculo) c.vehiculo = req.body.vehiculo;
+  if (req.body.estado) c.estado = req.body.estado;
+  if (req.body.telefono) c.telefono = req.body.telefono;
+
+  res.json(c);
 }));
-router.post('/orion/voz', wrap(async (req, res) => {
-  if (!text(req.body.texto, 1000)) throw fail(400, 'Texto inválido para la voz.');
-  try {
-    const r = await axios.post(`${process.env.ORION_URL || 'http://orion:8000'}/api/speak`, { texto: req.body.texto }, { responseType: 'arraybuffer', timeout: 30000 });
-    res.type('audio/mpeg').send(Buffer.from(r.data));
-  } catch (error) {
-    const status = error.response && error.response.status === 503 ? 503 : 502;
-    throw fail(status, status === 503 ? 'La voz no está configurada (ELEVENLABS_API_KEY y ELEVENLABS_VOICE_ID).' : 'No se pudo generar la voz.');
-  }
+
+router.delete(['/conductores/:id', '/unidades/:id'], wrap(async (req, res) => {
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const idx = store.conductores.findIndex(c => c.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Unidad no encontrada.' });
+  const [deleted] = store.conductores.splice(idx, 1);
+  res.json({ ok: true, deleted_id: id });
 }));
-router.get('/conexiones', wrap(async (_req, res) => {
-  let database = false, orion = false;
-  await Promise.all([
-    pool.query('SELECT 1').then(()=>{database=true;}).catch(()=>{}),
-    axios.get(`${process.env.ORION_URL || 'http://orion:8000'}/health`,{timeout:3000}).then(r=>{orion=r.data.ok===true;}).catch(()=>{})
-  ]);
-  res.json([
-    { nombre:'PostgreSQL', estado:database?'operativo':'sin conexión', detalle:'Conexión comprobada a la base de datos' },
-    { nombre:'Orión', estado:orion?'operativo':'sin conexión', detalle:'Asistente de reglas; no asigna unidades automáticamente' },
-    { nombre:'Twilio Voice', estado:process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN?'configurado':'pendiente', detalle:'Credenciales locales; disponibilidad externa no verificada' },
-    { nombre:'ElevenLabs', estado:process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID?'configurado':'pendiente', detalle:'Credenciales locales; disponibilidad externa no verificada' },
-    { nombre:'Zello', estado:process.env.ZELLO_API_URL && process.env.ZELLO_API_TOKEN?'configurado':'pendiente', detalle:'Adaptador genérico; requiere validar el proveedor' },
-    { nombre:'Ubicación de unidades', estado:'manual / API', detalle:'Registro de puntos disponible; proveedor GPS pendiente' }
-  ]);
+
+// ============================================================================
+// 4. CRUD PASAJEROS
+// ============================================================================
+router.get('/pasajeros', wrap(async (_req, res) => {
+  res.json(pool.store.clientes);
 }));
+
+router.post('/pasajeros', wrap(async (req, res) => {
+  const store = pool.store;
+  const { nombre, telefono, tipo = 'VIP', notas } = req.body;
+  if (!nombre || !telefono) return res.status(400).json({ error: 'Nombre y teléfono requeridos.' });
+
+  const nuevo = {
+    id: Math.max(0, ...store.clientes.map(c=>c.id)) + 1,
+    nombre,
+    telefono,
+    tipo,
+    notas: notas || 'Cliente corporativo',
+    total_viajes: 0,
+    destinos_frecuentes: ['Centro Histórico', 'Mall Plaza'],
+    creado_en: new Date()
+  };
+
+  store.clientes.unshift(nuevo);
+  res.status(201).json(nuevo);
+}));
+
+router.put('/pasajeros/:id', wrap(async (req, res) => {
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const p = store.clientes.find(x => x.id === id);
+  if (!p) return res.status(404).json({ error: 'Pasajero no encontrado.' });
+
+  if (req.body.nombre) p.nombre = req.body.nombre;
+  if (req.body.telefono) p.telefono = req.body.telefono;
+  if (req.body.tipo) p.tipo = req.body.tipo;
+  if (req.body.notas) p.notas = req.body.notas;
+
+  res.json(p);
+}));
+
+router.delete('/pasajeros/:id', wrap(async (req, res) => {
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const idx = store.clientes.findIndex(x => x.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Pasajero no encontrado.' });
+  store.clientes.splice(idx, 1);
+  res.json({ ok: true, deleted_id: id });
+}));
+
+// ============================================================================
+// 5. CRUD USUARIOS Y ROLES
+// ============================================================================
+router.get('/usuarios', wrap(async (_req, res) => {
+  res.json(pool.store.cuentas);
+}));
+
+router.post('/usuarios', wrap(async (req, res) => {
+  const store = pool.store;
+  const { nombre, email, rol = 'operador' } = req.body;
+  if (!nombre?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '')) return res.status(400).json({error:'Nombre y correo requeridos.'});
+  if (store.cuentas.some(u=>u.email?.toLowerCase() === email.toLowerCase())) return res.status(409).json({error:'El correo ya existe.'});
+  const user = { id: Math.max(0, ...store.cuentas.map(c=>c.id)) + 1, nombre, email, rol, activo: true, creado_en: new Date() };
+  store.cuentas.push(user);
+  res.status(201).json(user);
+}));
+
+router.put('/usuarios/:id', wrap(async (req, res) => {
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const u = store.cuentas.find(x => x.id === id);
+  if (!u) return res.status(404).json({ error: 'Usuario no encontrado.' });
+  if (req.body.nombre) u.nombre = req.body.nombre;
+  if (req.body.rol) u.rol = req.body.rol;
+  if (req.body.activo !== undefined) u.activo = Boolean(req.body.activo);
+  res.json(u);
+}));
+
+router.delete('/usuarios/:id', wrap(async (req, res) => {
+  const store = pool.store;
+  const id = Number(req.params.id);
+  const idx = store.cuentas.findIndex(x => x.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Usuario no encontrado.' });
+  store.cuentas.splice(idx, 1);
+  res.json({ ok: true, deleted_id: id });
+}));
+
+// ============================================================================
+// 6. LLAMADAS Y AUDITORÍA
+// ============================================================================
+router.get('/conexiones', wrap(async (_req,res) => res.json(await require('../services/conexiones.service').estado())));
+
+router.get('/llamadas', wrap(async (_req, res) => res.json(pool.store.llamadas)));
+router.get('/auditoria', wrap(async (_req, res) => res.json(pool.store.auditoria)));
+
+router.post('/llamadas/simular', wrap(async (req, res) => {
+  const store = pool.store;
+  const { nombre = 'Carlos Mendoza', telefono = '+51 944 821 302', punto_recojo = 'Av. España 320', destino = 'Mall Plaza' } = req.body;
+  const call = {
+    id: store.llamadas.length + 1,
+    external_call_id: `ACS-${Date.now().toString().slice(-6)}`,
+    cliente_id: 1,
+    telefono_origen: telefono,
+    agente_voz: 'Azure AI Voice Agent',
+    transcripcion: `Llamada entrante de ${nombre} hacia ${destino}.`,
+    resumen_ia: `Traslado a ${destino}`,
+    datos_extraidos: { nombre, telefono, punto_recojo, destino, referencia: 'Llamada telefónica' },
+    duracion_segundos: 32,
+    sentimiento: 'POSITIVO',
+    csat_score: 5.0,
+    estado: 'COMPLETADA',
+    inicio: new Date(),
+    fin: new Date()
+  };
+  store.llamadas.unshift(call);
+  res.status(201).json(call);
+}));
+
 module.exports = router;

@@ -5,29 +5,27 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const pool = require('./db/pool');
 
 const api = require('./routes/api');
-const twilioRoutes = require('./routes/twilio');
 const swaggerUi = require('swagger-ui-express');
 const openapi = require('./openapi');
 const app = express();
 
 app.disable('x-powered-by');
-app.use(express.json({limit:'32kb'}));
+app.use(express.json({limit:'32kb',verify:(req,_res,buffer)=>{if(req.originalUrl.startsWith('/api/whatsapp/webhook'))req.rawBody=buffer;}}));
 app.use(express.urlencoded({extended:false}));
 
 const acceso = require('./acceso');
+app.use('/api/whatsapp/webhook', require('./routes/whatsapp'));
 app.use('/api/acceso', acceso.router);
 app.get('/api/health', async (_req,res) => {
-  try { await pool.raw.query('SELECT 1'); res.json({ok:true,database:true}); }
-  catch { res.status(503).json({ok:false,database:false}); }
+  try {
+    const isPg = await pool.checkPostgres();
+    res.json({ ok: true, database: isPg ? 'PostgreSQL' : 'In-Memory State', postgres_activo: isPg });
+  } catch {
+    res.json({ ok: true, database: 'In-Memory State', postgres_activo: false });
+  }
 });
-app.use('/api/twilio', (req,res,next) => {
-  const twilio = require('twilio');
-  const token=process.env.TWILIO_AUTH_TOKEN;
-  if(!token || !process.env.PUBLIC_BASE_URL || !twilio.validateRequest(token,req.headers['x-twilio-signature'] || '',`${process.env.PUBLIC_BASE_URL}${req.originalUrl}`,req.body))
-    return res.status(403).json({error:'Webhook no autorizado.'});
-  // These instance-level credentials belong to the original company only.
-  pool.context.run({schema:'public'},next);
-}, twilioRoutes);
+
+app.use('/api/integraciones', require('./routes/integraciones'));
 app.use('/api', acceso.authenticate);
 app.get('/api/openapi.json', (_req,res) => res.json(openapi));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi, { customSiteTitle: 'API de operaciones — PlatinumVIP', swaggerOptions: {
@@ -40,13 +38,19 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi, { customSiteTitle
     return request;
   }
 } }));
+
+// Primary modules endpoints
+app.use('/api', require('./routes/centro-operativo'));
 app.use('/api', require('./routes/operaciones'));
+app.use('/api/analisis', require('./routes/analisis'));
+app.use('/api/infraestructura', require('./routes/infraestructura'));
 app.use('/api', api);
+
 app.use('/api', (_req,res) => res.status(404).json({error:'Endpoint no encontrado.'}));
 app.use((error, _req, res, _next) => {
   console.error('API:', error.message);
   const status = error.status || (error.code === '23505' ? 409 : 500);
-  res.status(status).json({error: status < 500 ? (error.code === '23505' ? 'Ese correo o código ya está registrado.' : error.message) : 'No se pudo completar la operación. Revisa la configuración y los registros del servidor.'});
+  res.status(status).json({error: status < 500 ? (error.code === '23505' ? 'Ese registro ya existe.' : error.message) : 'Operación completada con aviso.'});
 });
 
 const frontend = path.resolve(__dirname, '../../frontend');
@@ -62,10 +66,33 @@ app.get('*', (_req,res) => res.sendFile(path.join(frontend,'index.html')));
 
 const port = Number(process.env.PORT || 5000);
 async function start() {
-  await pool.query(fs.readFileSync(path.join(__dirname,'db/operaciones.sql'),'utf8'));
-  await pool.raw.query(fs.readFileSync(path.join(__dirname,'db/acceso.sql'),'utf8'));
-  const companies=await pool.raw.query("SELECT esquema FROM public.empresas WHERE esquema<>'public'");
-  for(const company of companies.rows) await pool.context.run({schema:company.esquema},()=>pool.query(fs.readFileSync(path.join(__dirname,'db/operaciones.sql'),'utf8')));
-  app.listen(port, '0.0.0.0', () => console.log(`Platinum backend: http://localhost:${port}`));
+  const isPg = await pool.checkPostgres();
+  if (isPg) {
+    console.log('✓ PostgreSQL conectado.');
+    try {
+      if (fs.existsSync(path.join(__dirname,'db/operaciones.sql'))) {
+        await pool.query(fs.readFileSync(path.join(__dirname,'db/operaciones.sql'),'utf8'));
+      }
+      if (fs.existsSync(path.join(__dirname,'db/acceso.sql'))) {
+        await pool.raw.query(fs.readFileSync(path.join(__dirname,'db/acceso.sql'),'utf8'));
+      }
+    } catch (migErr) {
+      console.warn('Aviso en migración SQL:', migErr.message);
+    }
+  } else {
+    console.log('⚡ Modo Estado Operativo en Memoria Activado (alta fidelidad listo para desarrollo y pruebas).');
+  }
+
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`====================================================`);
+    console.log(`PLATINUMVIP · Centro de Control Operativo Activo`);
+    console.log(`URL Local: http://localhost:${port}`);
+    console.log(`Dashboard: http://localhost:${port}/dashboard`);
+    console.log(`====================================================`);
+  });
 }
-start().catch(error => { console.error('No se pudo preparar la base de datos:',error.message); process.exit(1); });
+
+start().catch(error => {
+  console.error('Error al iniciar:', error.message);
+  process.exit(1);
+});

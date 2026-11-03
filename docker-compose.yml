@@ -25,24 +25,32 @@ services:
     container_name: platinum-backend
     restart: unless-stopped
     env_file: .env
+    volumes:
+      - ./frontend:/app/frontend:ro
     ports:
       - "5000:5000"
     depends_on:
       postgres:
         condition: service_healthy
-      orion:
-        condition: service_started
 
-  orion:
-    build: ./asistente-voz
-    container_name: platinum-orion
+  n8n:
+    image: ${N8N_IMAGE:-docker.n8n.io/n8nio/n8n:stable}
     restart: unless-stopped
-    env_file: .env
     ports:
-      - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "127.0.0.1:5678:5678"
+    environment:
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      WEBHOOK_URL: ${N8N_PUBLIC_URL:-http://localhost:5678/}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?Define N8N_ENCRYPTION_KEY en .env}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
+      GENERIC_TIMEZONE: America/Lima
+      N8N_DIAGNOSTICS_ENABLED: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
 
 volumes:
   postgres_data:
+  n8n_data:

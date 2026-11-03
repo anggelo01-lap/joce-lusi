@@ -1,264 +1,945 @@
 <!DOCTYPE html>
-
 <html lang="es-PE">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>PlatinumVIP — Central Trujillo</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<!-- Leaflet CSS -->
-<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
-<!-- Dashboard CSS -->
-<link href="dashboard.css" rel="stylesheet"/>
-<link href="operations.css" rel="stylesheet"/>
-<link href="mejoras.css" rel="stylesheet"/><link rel="stylesheet" href="acceso.css"/></head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PlatinumVIP — Centro de Control · Trujillo, Perú</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  
+  <!-- Leaflet CSS para Mapas -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  
+  <!-- Estilos del Dashboard -->
+  <link rel="stylesheet" href="dashboard.css?v=20261102-brand1"/><link rel="stylesheet" href="presentacion.css?v=20261102-flujo3"/>
+</head>
 <body>
-<div class="app-container">
-<!-- ==========================================
-         SIDEBAR NAVIGATION (7 MÓDULOS PRINCIPALES)
-         ========================================== -->
-<aside class="sidebar" id="sidebar">
-<div class="sidebar-header">
-<div class="sidebar-logo-wrap">
-<img alt="PlatinumVip Logo" class="sidebar-logo" src="logo.png"/>
-</div>
-<div class="sidebar-brand-info">
-<span class="brand-name">Platinum<span class="brand-accent">VIP</span></span>
-<span class="brand-tier"><span class="tier-pulse"></span> CORPORATIVO VIP</span>
-</div>
-</div>
-<nav class="sidebar-nav">
-<!-- SECCIÓN 1: OPERACIONES PRINCIPALES -->
-<div class="nav-section">
-<div class="nav-section-title">Centro Operativo</div>
-<ul class="nav-list">
-<!-- 1. Panel General -->
-<li class="nav-item active" data-view="panel-general">
-<a href="#panel-general">
-<div class="nav-icon-wrap">
-<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<rect height="7" rx="1.5" width="7" x="3" y="3"></rect>
-<rect height="7" rx="1.5" width="7" x="14" y="3"></rect>
-<rect height="7" rx="1.5" width="7" x="14" y="14"></rect>
-<rect height="7" rx="1.5" width="7" x="3" y="14"></rect>
-</svg>
-</div>
-<span class="nav-label">Panel General</span>
-<span class="nav-badge badge-cyan">360°</span>
-</a>
-</li>
-<!-- 2. Flujo de Trabajo -->
-<li class="nav-item" data-view="flujo-trabajo">
-<a href="#flujo-trabajo">
-<div class="nav-icon-wrap">
-<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<circle cx="6" cy="6" r="3"></circle>
-<circle cx="6" cy="18" r="3"></circle>
-<line x1="6" x2="6" y1="9" y2="15"></line>
-<path d="M18 9a9 9 0 0 1-9 9"></path>
-<circle cx="18" cy="9" r="3"></circle>
-</svg>
-</div>
-<span class="nav-label">Flujo de Trabajo</span>
-<span class="nav-badge badge-emerald">6 Fases</span>
-</a>
-</li>
-<!-- 3. Consola de la Operadora IA -->
-<li class="nav-item" data-view="consola-ia">
-<a href="#consola-ia">
-<div class="nav-icon-wrap">
-<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<path d="M12 2a4 4 0 0 0-4 4v1H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"></path>
-<circle cx="9" cy="13" fill="currentColor" r="1.25"></circle>
-<circle cx="15" cy="13" fill="currentColor" r="1.25"></circle>
-<path d="M10 16.5c1 .5 3 .5 4 0"></path>
-</svg>
-</div>
-<span class="nav-label">Consola Operadora IA</span>
-<span class="nav-badge badge-purple">Orión</span>
-</a>
-</li>
-<!-- 4. Despacho y Flujo -->
-<li class="nav-item" data-view="despacho-flujo">
-<a href="#despacho-flujo">
-<div class="nav-icon-wrap">
-<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-<line x1="8" x2="8" y1="2" y2="18"></line>
-<line x1="16" x2="16" y1="6" y2="22"></line>
-</svg>
-</div>
-<span class="nav-label">Despacho y Flujo</span>
-<span class="nav-badge badge-live">GPS manual</span>
-</a>
-</li>
-<li class="nav-item" data-view="unidades">
-<a href="#unidades">
-<div class="nav-icon-wrap">
-<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-<line x1="8" x2="8" y1="2" y2="18"></line>
-<line x1="16" x2="16" y1="6" y2="22"></line>
-</svg>
-</div>
-<span class="nav-label">Unidades y conductores</span>
+  <div class="app-layout">
+    <!-- =====================================================================
+         SIDEBAR (RÉPLICA EXACTA DE LA IMAGEN)
+         ===================================================================== -->
+    <aside class="sidebar">
+      <!-- Brand Header -->
+      <div class="sidebar-brand-box">
+        <div class="sidebar-logo-badge">
+          <img src="logo.png" alt="Logo de Platinum Corporativo VIP">
+        </div>
+        <div class="sidebar-brand-text">
+          <div class="brand-main-title">PLATINUM<span class="vip-gold">VIP</span></div>
+          <span class="brand-corp-subtitle">PHOENIX NETWORKS S.A.C.</span>
+        </div>
+      </div>
 
-</a>
-</li></ul>
-</div>
-<!-- SECCIÓN 2: INTEGRACIÓN, DESARROLLO & CONTROL -->
-<div class="nav-section">
-<div class="nav-section-title">Integración &amp; Sistema</div>
-<ul class="nav-list">
-<!-- 5. Conexiones -->
-<li class="nav-item" data-view="conexiones">
-<a href="#conexiones">
-<div class="nav-icon-wrap">
-<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-<polyline points="15 3 21 3 21 9"></polyline>
-<line x1="10" x2="21" y1="14" y2="3"></line>
-</svg>
-</div>
-<span class="nav-label">Conexiones</span>
-<span class="nav-badge badge-emerald">Ver estado</span>
-</a>
-</li>
-<!-- 6. API -->
-<li class="nav-item" data-view="api">
-<a href="#api">
-<div class="nav-icon-wrap">
-<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<polyline points="16 18 22 12 16 6"></polyline>
-<polyline points="8 6 2 12 8 18"></polyline>
-<line x1="14" x2="10" y1="4" y2="20"></line>
-</svg>
-</div>
-<span class="nav-label">Documentación API</span>
-<span class="nav-badge badge-blue">REST</span>
-</a>
-</li>
-<!-- 7. Configuraciones -->
-<li class="nav-item" data-view="configuraciones">
-<a href="#configuraciones">
-<div class="nav-icon-wrap">
-<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<circle cx="12" cy="12" r="3"></circle>
-<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-</svg>
-</div>
-<span class="nav-label">Configuraciones</span>
-</a>
-</li>
-</ul>
-</div>
-</nav>
-<!-- Connection Status Widget in Sidebar -->
-<div class="sidebar-footer">
-<div class="dispatch-live-widget">
-<div class="dispatch-live-header">
-<span class="live-indicator">Central Trujillo · Perú</span>
-<span class="live-online-tag" id="connectionState">Conectando…</span>
-</div>
-<p class="live-subtext" id="lastSync">Esperando datos de PostgreSQL</p>
-</div>
-</div>
-</aside>
-<!-- ==========================================
-         MAIN WRAPPER & HEADER
-         ========================================== -->
-<div class="main-wrapper">
-<!-- Top Header -->
-<header class="top-header">
-<div class="header-left"><button aria-label="Abrir menú" class="icon-btn mobile-only" id="menuButton">☰</button>
-<div class="header-title-wrap">
-<h1 id="currentViewTitle"><span id="viewTitle">Panel General</span><span class="kpi-pill-live">Datos registrados</span></h1>
-<span class="header-subtitle" id="currentViewSubtitle">Servicios, unidades y recorridos · Trujillo, Perú</span>
-</div>
-<div class="header-search">
-<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
-<circle cx="11" cy="11" r="8"></circle>
-<line x1="21" x2="16.65" y1="21" y2="16.65"></line>
-</svg>
-<input id="globalSearchInput" placeholder="Buscar pasajero, chofer, placa, servicio..." type="text"/>
-</div>
-</div>
-<div class="header-right"><span class="operation-clock" id="clock"></span><button class="operation-refresh" id="refreshButton">↻ Actualizar</button>
-<!-- Simulation toggle -->
+      <!-- Menú Principal -->
+      <ul class="sidebar-menu">
+        <li class="menu-item">
+          <a href="#panel-principal" class="menu-link active" data-view="panel-principal">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span>Inicio</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#recepcion-llamadas" class="menu-link" data-view="recepcion-llamadas">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <span>Recepción de llamadas</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#solicitudes" class="menu-link" data-view="solicitudes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              <path d="M9 12h6"></path>
+              <path d="M9 16h6"></path>
+            </svg>
+            <span>Solicitudes</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#conductores-unidades" class="menu-link" data-view="conductores-unidades">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"></path>
+              <rect x="3" y="11" width="18" height="8" rx="2"></rect>
+              <circle cx="7.5" cy="15.5" r="1.5"></circle>
+              <circle cx="16.5" cy="15.5" r="1.5"></circle>
+            </svg>
+            <span>Conductores y unidades</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#asignacion-servicios" class="menu-link" data-view="asignacion-servicios">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Asignación de servicios</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#mapa-servicios" class="menu-link" data-view="mapa-servicios">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+              <line x1="8" y1="2" x2="8" y2="18"></line>
+              <line x1="16" y1="6" x2="16" y2="22"></line>
+            </svg>
+            <span>Mapa de servicios</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#pasajeros" class="menu-link" data-view="pasajeros">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M7 17a5 5 0 0 1 10 0"></path>
+            </svg>
+            <span>Historial de pasajeros</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#historial-reportes" class="menu-link" data-view="historial-reportes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span>Historial y reportes</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#analisis-predictivo" class="menu-link" data-view="analisis-predictivo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+            <span>Análisis predictivo</span>
+          </a>
+        </li>
 
-<!-- New dispatch button -->
-<button class="btn-action-primary" id="newServiceButton">
-<svg fill="none" height="16" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="16">
-<line x1="12" x2="12" y1="5" y2="19"></line>
-<line x1="5" x2="19" y1="12" y2="12"></line>
-</svg>
-            + Nuevo Despacho
-          </button>
-<!-- Notification Bell -->
+        <div class="sidebar-menu-divider"></div>
 
-<!-- User Profile & Logout -->
-<a class="user-profile-header" href="index.html" title="Volver al inicio">
-<div class="user-avatar">OP</div>
-<div class="user-info">
-<span class="user-name">Operador Principal</span>
-<span class="user-role">Central Trujillo / Perú</span>
-</div>
-<svg fill="none" height="16" stroke="currentColor" stroke-width="2" style="color:#94a3b8; margin-left: 4px;" viewbox="0 0 24 24" width="16">
-<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-<polyline points="16 17 21 12 16 7"></polyline>
-<line x1="21" x2="9" y1="12" y2="12"></line>
-</svg>
-</a>
-</div>
-</header>
-<!-- ==========================================
-           DASHBOARD VIEWS CONTAINER (7 PANELES)
-           ========================================== -->
-<main class="dashboard-content operational-ui"><div class="alert" hidden="" id="alert" role="alert"></div><section class="view dashboard-view active" id="view-panel-general">
-<div class="executive-banner">
-<div class="banner-content">
-<div class="banner-tag">CENTRAL TRUJILLO · PERÚ</div>
-<h2 class="banner-title">Bienvenido al Centro de Control Ejecutivo</h2>
-<p class="banner-desc">Gestión de flota VIP, despacho de servicios y consulta de recorridos registrados en la base de datos.</p>
-</div>
-<div class="banner-quick-actions">
-<button class="banner-btn" data-go="despacho-flujo"><svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg> Ver despacho y recorridos</button>
-<button class="banner-btn primary" data-go="consola-ia"><svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M12 2a4 4 0 0 0-4 4v1H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"></path></svg> Consola Operadora IA</button>
-</div>
-</div>
-<div class="attention-strip" id="attention" aria-live="polite"></div>
-<div class="kpi-grid" id="metrics"><div class="empty">Cargando indicadores…</div></div>
-<div class="two-columns analytics-grid-2"><article class="card chart-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">ACTIVIDAD DE HOY</p><h2 class="card-title">Servicios por hora</h2></div><span class="tag">Hora de Perú</span></div><div class="hour-chart" id="hourChart"></div></article><article class="card chart-card"><div class="card-heading card-header-flex"><h2 class="card-title">Estado de la operación</h2></div><div class="stack" id="operationSummary"></div><button class="secondary" data-go="flujo-trabajo">Ver flujo de servicios →</button></article></div>
-<div class="stats-grid" id="statsGrid"><div class="empty">Cargando estadísticas…</div></div>
-<article class="card chart-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">ÚLTIMOS REGISTROS</p><h2 class="card-title">Servicios recientes</h2></div><button class="secondary" data-go="despacho-flujo">Ir a despacho →</button></div><div id="recentServices"></div></article>
-</section><section class="view dashboard-view" hidden="" id="view-flujo-trabajo"><div class="section-intro"><div><h2>Del pedido al destino</h2><p>Arrastra cada tarjeta a la siguiente fase o usa sus botones. Cada cambio se guarda en la base de datos.</p></div><button id="wfNew">+ Nuevo servicio</button></div><div class="wf-toolbar"><label class="search-label sr-label">Buscar<input id="wfSearch" placeholder="Cliente, placa, origen, destino…" type="search"/></label><label>Categoría<select id="wfCat"><option value="">Todas</option><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label><label class="wf-check"><input id="wfHideDone" type="checkbox"/> Ocultar finalizados</label></div><div class="wf-stats" id="wfStats"></div><div class="workflow wf-board" id="workflow"></div></section><section class="view dashboard-view" hidden="" id="view-consola-ia"><div class="console-layout"><article class="card chart-card chat-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">OPERADORA VIRTUAL</p><h2 class="card-title">Conversar con Orión</h2></div><div class="chat-head-actions"><span class="tag" id="orionStatus">Comprobando…</span><button class="secondary" id="chatReset" type="button">Nueva conversación</button></div></div><div aria-live="polite" class="chat" id="chat"></div><div class="quick-replies" id="quickReplies"></div><form class="inline-form" id="chatForm"><label class="sr-only" for="chatText">Mensaje para Orión</label><input autocomplete="off" id="chatText" maxlength="2000" placeholder="Escribe o dicta el pedido del cliente…" required=""/><button class="secondary" id="chatMic" hidden="" title="Dictar" type="button">🎤</button><button id="chatSend">Enviar</button></form></article><article class="card chart-card ficha-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">FICHA DEL PEDIDO</p><h2 class="card-title">Datos detectados</h2></div><span class="tag" id="fichaProgress">0/4</span></div><div class="ficha-bar"><span id="fichaBar"></span></div><div class="stack ficha-fields"><label>Cliente<input id="fNombre" maxlength="120" placeholder="Cliente"/></label><label>Teléfono *<input id="fTelefono" maxlength="30" placeholder="9XX XXX XXX" inputmode="tel"/></label><label>Recojo *<input id="fOrigen" maxlength="500" placeholder="Dirección de recojo"/></label><label>Destino *<input id="fDestino" maxlength="500" placeholder="Dirección de destino"/></label><label>Categoría<select id="fCategoria"><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label></div><p class="muted" id="fichaUnits"></p><button disabled="" id="fichaCreate" type="button">Registrar servicio</button><p class="muted">Los campos se rellenan mientras conversas y puedes corregirlos. Nada se registra hasta pulsar el botón.</p></article></div><article class="card chart-card calls-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">HISTORIAL TELEFÓNICO</p><h2 class="card-title">Llamadas registradas</h2></div><div class="calls-filters"><input id="callSearch" placeholder="Buscar teléfono o cliente…" type="search"/><select id="callStatus"><option value="">Todos los estados</option></select></div></div><div class="calls-layout"><div class="calls-list" id="calls"></div><div class="call-detail" id="callDetail"><div class="empty">Selecciona una llamada para ver la conversación.</div></div></div></article></section><section class="view dashboard-view" hidden="" id="view-despacho-flujo">
-<article class="card map-card chart-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">TRUJILLO Y ALREDEDORES</p><h2 class="card-title">Ubicación y recorridos</h2></div><button class="secondary" id="centerMap">Centrar en Trujillo</button></div><div class="map-layout"><div><div aria-label="Mapa de unidades y recorridos de Trujillo" id="fleetMap"></div><div class="map-legend"><span>● Ubicación ≤ 5 min</span><span class="muted">● Ubicación anterior</span><span>━ Puntos registrados</span></div></div><div class="route-controls"><label>Unidad<select id="routeDriver"><option value="">Seleccionar unidad</option></select></label><label>Fecha del recorrido<input id="routeDate" required="" type="date"/></label><label>Servicio (opcional)<select id="routeService"><option value="">Todos los servicios</option></select></label><button id="loadRoute">Consultar recorrido</button><button class="secondary" disabled="" id="exportRoute">Descargar GeoJSON</button><div aria-live="polite" class="route-summary" id="routeSummary">Elige una unidad y fecha para consultar su historial.</div><p class="muted">Las líneas unen puntos guardados; no calculan una ruta por calles. Las ubicaciones sin fecha no se muestran.</p><button class="secondary" id="openPosition">+ Registrar ubicación manual</button></div></div></article>
-<article class="card chart-card"><div class="card-heading card-header-flex"><div><p class="eyebrow">CENTRAL DE DESPACHO</p><h2 class="card-title">Servicios</h2></div><span class="tag">Últimos 100</span></div><div class="filters"><label class="search-label">Buscar<input id="serviceSearch" placeholder="Cliente, placa, origen o código…" type="search"/></label><label>Estado<select id="serviceStatus"><option value="">Todos</option><option>SOLICITADO</option><option>ASIGNADO</option><option>EN_RECOJO</option><option>EN_CURSO</option><option>COMPLETADO</option><option>CANCELADO</option></select></label></div><div id="servicesTable"></div></article>
-</section><section class="view dashboard-view" hidden="" id="view-unidades"><div class="section-intro"><div><p class="eyebrow">GESTIÓN DE FLOTA</p><h2>Unidades y conductores</h2><p>Gestiona tus vehículos y conductores por separado. Asigna el conductor según cada cambio de turno.</p></div><div class="fleet-create"><button id="newPersonButton" class="secondary" type="button">+ Registrar conductor</button><button id="newDriverButton" type="button">+ Registrar unidad</button></div></div><div class="fleet-tabs" aria-label="Gestión de flota"><button type="button" data-fleet-tab="units" aria-pressed="true">Unidades</button><button type="button" data-fleet-tab="people" aria-pressed="false">Conductores</button></div><div id="fleetUnits"><div id="driversSummary" class="connections-summary"></div><div class="filters driver-filters"><label>Buscar unidad o conductor<input id="driverSearch" type="search" placeholder="Código, placa, nombre o teléfono"/></label><label>Estado<select id="driverFilterStatus"><option value="">Todos los estados</option><option>DISPONIBLE</option><option>OCUPADO</option><option>DESCONECTADO</option></select></label><label>Categoría<select id="driverFilterCategory"><option value="">Todas las categorías</option><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label></div><p id="driversCount" class="muted" role="status"></p><div class="driver-grid" id="drivers"></div></div><div id="fleetPeople" hidden><div class="filters driver-filters"><label>Buscar conductor<input id="personSearch" type="search" placeholder="Nombre, código, teléfono o licencia"/></label><label>Estado<select id="personFilter"><option value="">Todos</option><option value="active">Activos</option><option value="inactive">Inactivos</option><option value="free">Sin unidad asignada</option></select></label></div><p id="peopleCount" class="muted" role="status"></p><div id="peopleList" class="driver-grid"></div></div></section><section class="view dashboard-view" hidden="" id="view-conexiones"><div class="section-intro"><div><p class="eyebrow">CENTRO DE INTEGRACIONES</p><h2>Conecta tu operación</h2><p>Consulta la disponibilidad de tus servicios y los pasos para completar su configuración.</p></div><button id="checkConnections" type="button">Comprobar ahora</button></div><div class="connections-summary" id="connectionsSummary" aria-label="Resumen de integraciones"></div><p class="connections-feedback" id="connectionsFeedback" role="status" aria-live="polite">Comprueba las integraciones para consultar su estado.</p><div class="connections-grid" id="connections" aria-busy="false"></div></section><section class="view dashboard-view" hidden="" id="view-api"><article class="card chart-card"><div class="card-heading card-header-flex"><h2 class="card-title">Documentación interactiva (Swagger UI)</h2><span class="tag">REST · JSON</span></div><p class="muted">Prueba cada endpoint desde el navegador con “Try it out”.</p><div class="docs-banner"><div><strong>API de operaciones</strong><p class="muted">Conductores, servicios, ubicaciones y webhooks del backend.</p></div><a class="btn-link primary" href="/api/docs" target="_blank" rel="noopener">Abrir Swagger del backend ↗</a></div><div class="docs-banner"><div><strong>API de Orión</strong><p class="muted">Consulta y prueba los endpoints del asistente Orión.</p></div><a class="btn-link primary" href="http://localhost:8000/docs" target="_blank" rel="noopener">Abrir Swagger de Orión ↗</a></div></article></section><section class="view dashboard-view" hidden="" id="view-configuraciones"><div class="two-columns analytics-grid-2"><article class="card chart-card"><div class="card-heading card-header-flex"><h2 class="card-title">Configuración de la central</h2><span class="tag">PostgreSQL</span></div><p class="muted" id="settingsPermission"></p><form class="stack" id="settingsForm"><label>Nombre de la empresa<input id="companyName" maxlength="120" name="empresa" required=""/></label><div class="two-columns analytics-grid-2"><label>Ciudad<input readonly="" value="Trujillo"/></label><label>País<input readonly="" value="Perú"/></label><label>Zona horaria<input readonly="" value="America/Lima"/></label><label>Moneda<input readonly="" value="PEN · Sol peruano"/></label></div><label>Actualización automática (segundos)<input id="refreshSeconds" max="300" min="15" required="" step="1" type="number"/></label><button>Guardar configuración</button></form></article><article class="card chart-card"><p class="eyebrow">CÓMO EMPEZAR</p><h2>De la central al recorrido</h2><ol class="guide"><li>Registra tus unidades con conductor, placa y categoría.</li><li>Crea un servicio con teléfono, origen y destino.</li><li>Asigna una unidad disponible de la misma categoría.</li><li>Registra puntos manuales o envíalos por la API.</li><li>Consulta los recorridos por unidad, día y servicio.</li></ol><p class="muted">Las ubicaciones manuales sirven como registros puntuales. Para seguimiento continuo se necesita conectar una fuente GPS.</p></article></div><div class="access-roles">
- <article class="access-role"><span class="tag">PLATAFORMA</span><h3>Superadministrador</h3><p>Los dos programadores. Acceso a todas las empresas, alta de empresas y gestión de administradores y trabajadores.</p></article>
- <article class="access-role"><span class="tag">EMPRESA</span><h3>Administrador</h3><p>El dueño de la empresa. Gestiona su operación, configuración y cuentas de trabajadores.</p></article>
- <article class="access-role"><span class="tag">OPERACIÓN</span><h3>Usuario</h3><p>Los trabajadores. Gestionan servicios, unidades y recorridos de su empresa; consultan la configuración.</p></article>
-</div>
-<div class="access-section" hidden id="companyManagement"><article class="card chart-card"><div class="card-heading"><h2>Empresas de la plataforma</h2><span class="tag">Superadministrador</span></div><p class="muted">Cada empresa tiene sus propios servicios, unidades, clientes y llamadas. Al crear una empresa, se abre su central vacía para que registres al dueño.</p><div class="access-form-grid"><form class="stack" id="switchCompanyForm"><label>Empresa activa<select id="companySelect"></select></label><button type="submit">Abrir empresa</button></form><form class="stack" id="createCompanyForm"><label>Nueva empresa<input id="newCompanyName" maxlength="120" required placeholder="Nombre de la empresa"/></label><button class="secondary" type="submit">Crear y abrir empresa</button></form></div><p class="muted company-list-note">Administra las empresas de la plataforma. Para eliminar una empresa debe estar vacía y debes abrir otra central primero.</p><div id="companyList"></div></article></div>
-<div class="access-section" hidden id="userManagement"><article class="card chart-card"><div class="card-heading"><h2>Cuentas y permisos</h2><span class="tag" id="activeCompanyLabel"></span></div><p class="muted">Las cuentas creadas aquí pertenecen a la empresa activa. Una cuenta desactivada pierde el acceso inmediatamente.</p><div class="access-account-layout"><form class="stack" id="createAccountForm"><label>Nombre completo<input name="nombre" maxlength="120" required autocomplete="off"/></label><label>Correo de acceso<input name="email" type="email" maxlength="254" required autocomplete="off"/></label><label>Rol<select name="rol" id="accountRole"></select></label><label>Contraseña inicial<input name="password" type="password" minlength="12" maxlength="128" required autocomplete="new-password"/></label><p class="muted">Mínimo 12 caracteres. Entrega la contraseña al titular para que la cambie desde su cuenta.</p><button type="submit">Crear cuenta</button></form><div id="accountList"></div></div></article></div>
-<div class="access-section"><article class="card chart-card"><div class="card-heading"><h2>Seguridad de mi cuenta</h2><span class="tag">Personal</span></div><form class="stack" id="passwordForm"><div class="access-form-grid"><label>Contraseña actual<input name="actual" type="password" maxlength="128" required autocomplete="current-password"/></label><label>Nueva contraseña<input name="password" type="password" minlength="12" maxlength="128" required autocomplete="new-password"/></label></div><button type="submit">Cambiar mi contraseña</button></form></article></div></section><footer>PlatinumVIP · Trujillo, Perú <span>Datos de operación · Sin simulaciones</span></footer></main>
-</div>
-</div>
-<!-- ==========================================
-       MODAL: NUEVO DESPACHO VIP
-       ========================================== -->
+        <li class="menu-item">
+          <a href="#usuarios-roles" class="menu-link" data-view="usuarios-roles">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+            <span>Usuarios y roles</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#configuraciones" class="menu-link" data-view="configuraciones">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Configuraciones</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#auditoria-sistema" class="menu-link" data-view="auditoria-sistema">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>Auditoría del sistema</span>
+          </a>
+        </li>
+      </ul>
 
-<!-- ==========================================
-       TOAST CONTAINER
-       ========================================== -->
+      <!-- Footer del Sidebar -->
+      <div class="sidebar-footer">
+        <div class="sidebar-status-box">
+          <div class="status-online-line">
+            <span class="online-dot"></span>
+            <span>Datos en memoria</span>
+          </div>
+          <div class="status-location-line">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Trujillo, Perú</span>
+          </div>
+        </div>
 
-<!-- Leaflet JS & Chart.js -->
+        <div class="sidebar-user-pill" id="userProfileBtn" title="Clic para cerrar sesión">
+          <div class="user-avatar-badge">AS</div>
+          <div class="user-info-names">
+            <span class="user-display-name">Administrador</span>
+            <span class="user-session-state">Sesión activa</span>
+          </div>
+          <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+    </aside>
 
+    <!-- =====================================================================
+         MAIN CONTENT WRAPPER
+         ===================================================================== -->
+    <main class="main-wrapper">
+      <!-- Top Header con ícono de Operador -->
+      <header class="top-header">
+        <div class="header-left-cluster">
+          <div class="header-headset-badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d5bd8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+            </svg>
+          </div>
+          <div class="header-title-wrap">
+            <h1 class="header-main-title" id="viewHeaderTitle">Panel de Control Operativo</h1>
+            <span class="header-subtitle">PLATINUMVIP – Centro de Control</span>
+          </div>
+        </div>
 
-<!-- Dashboard Script -->
+        <div class="header-integrations-pills">
+          <div class="int-pill" data-status="unverified" title="Sin verificar ? Azure Communication Services">
+            <span class="int-pill-dot"></span>
+            <span>ACS Voz</span>
+          </div>
+          <div class="int-pill" data-status="unverified" title="Sin verificar ? Microsoft Foundry">
+            <span class="int-pill-dot"></span>
+            <span>Azure AI</span>
+          </div>
+          <div class="int-pill" data-status="unverified" title="Sin verificar ? n8n Workflows">
+            <span class="int-pill-dot"></span>
+            <span>n8n</span>
+          </div>
+          <div class="int-pill" data-status="unverified" title="Sin verificar ? PostgreSQL Database">
+            <span class="int-pill-dot"></span>
+            <span>PostgreSQL</span>
+          </div>
+          <div class="int-pill" data-status="unverified" title="Sin verificar ? Zello Work PTT">
+            <span class="int-pill-dot"></span>
+            <span>Zello PTT</span>
+          </div>
+          <div class="int-pill" data-status="unverified" title="Sin verificar ? WhatsApp Cloud API">
+            <span class="int-pill-dot"></span>
+            <span>WhatsApp</span>
+          </div>
+        </div>
 
-<dialog class="operational-ui" id="serviceDialog"><form class="dialog-form" id="serviceForm"><div class="card-heading card-header-flex"><h2 class="card-title">Nuevo servicio</h2><button aria-label="Cerrar" class="icon-button" data-close="" type="button">×</button></div><p class="muted">Registra el pedido; después podrás asignar una unidad.</p><label>Nombre del cliente<input maxlength="120" name="nombre" required=""/></label><label>Teléfono<input maxlength="30" name="telefono" placeholder="+51…" required="" type="tel"/></label><label>Punto de recojo<input maxlength="500" name="origen" placeholder="Dirección en Trujillo" required=""/></label><label>Destino<input maxlength="500" name="destino" placeholder="Dirección de destino" required=""/></label><label>Categoría<select name="categoria"><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label><button>Guardar servicio</button></form></dialog><dialog class="operational-ui" id="driverDialog"><form class="dialog-form" id="driverForm"><div class="card-heading card-header-flex"><h2 class="card-title" id="driverDialogTitle">Registrar unidad</h2><button aria-label="Cerrar" class="icon-button" data-close="" type="button">×</button></div><p class="muted">Registra el vehículo. Puedes asignar o cambiar su conductor desde la tarjeta de la unidad.</p><input id="driverId" type="hidden"/><label>Código de unidad<input maxlength="30" name="codigo" placeholder="UNI-001" required=""/></label><label>Placa<input maxlength="20" name="placa" required=""/></label><label>Vehículo<input maxlength="120" name="vehiculo" placeholder="Marca y modelo" required=""/></label><label>Categoría<select name="categoria"><option value="sedan">Sedán</option><option value="suv">SUV</option><option value="van">Van</option></select></label><button>Guardar unidad</button></form></dialog><dialog class="operational-ui" id="editDialog"><form class="dialog-form" id="editForm"><div class="card-heading card-header-flex"><h2 class="card-title">Gestionar servicio</h2><button aria-label="Cerrar" class="icon-button" data-close="" type="button">×</button></div><p class="muted" id="editServiceInfo"></p><input id="editServiceId" type="hidden"/><label>Unidad<select id="editDriver"><option value="">Sin asignar</option></select></label><label>Estado<select id="editStatus"></select></label><label>Tarifa acordada (S/)<input id="editFare" max="99999999" min="0" placeholder="Sin registrar" step="0.01" type="number"/></label><button>Guardar cambios</button></form></dialog><dialog class="operational-ui" id="positionDialog"><form class="dialog-form" id="positionForm"><div class="card-heading card-header-flex"><h2 class="card-title">Registrar ubicación</h2><button aria-label="Cerrar" class="icon-button" data-close="" type="button">×</button></div><p class="muted">Introduce coordenadas verificadas. La hora se guarda en Perú; puedes registrar un punto histórico.</p><label>Unidad<select id="positionDriver" required=""></select></label><label>Servicio (opcional)<select id="positionService"><option value="">Sin servicio asociado</option></select></label><div class="two-columns analytics-grid-2"><label>Latitud<input id="positionLat" max="90" min="-90" placeholder="-8.…" required="" step="any" type="number"/></label><label>Longitud<input id="positionLng" max="180" min="-180" placeholder="-79.…" required="" step="any" type="number"/></label></div><label>Fecha y hora de Perú<input id="positionTime" required="" type="datetime-local"/></label><button>Guardar punto</button></form></dialog><div class="toast operational-ui" hidden="" id="toast" role="status"></div><script defer="True" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script defer="True" src="mejoras.js"></script>
-<dialog class="operational-ui" id="accountDialog"><form class="dialog-form" id="editAccountForm"><div class="card-heading"><h2>Editar cuenta</h2><button type="button" class="icon-button" data-close aria-label="Cerrar">×</button></div><input type="hidden" id="editAccountId"/><label>Nombre completo<input name="nombre" maxlength="120" required/></label><label>Correo de acceso<input name="email" type="email" maxlength="254" required/></label><label>Rol<select id="editAccountRole" name="rol"></select></label><label>Nueva contraseña (opcional)<input name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password"/></label><p class="muted">Al guardar se cierran las sesiones de esta cuenta.</p><button type="submit">Guardar cuenta</button></form></dialog><dialog class="operational-ui" id="personDialog"><form class="dialog-form" id="personForm"><div class="card-heading"><h2 id="personTitle">Registrar conductor</h2><button type="button" class="icon-button" data-close aria-label="Cerrar">×</button></div><input id="personId" type="hidden"/><label>Código del conductor<input name="codigo" maxlength="30" placeholder="COND-001" required/></label><label>Nombre completo<input name="nombre" maxlength="120" required/></label><label>Teléfono<input name="telefono" type="tel" maxlength="30"/></label><label>Licencia de conducir<input name="licencia" maxlength="40"/></label><label>Estado<select name="activo"><option value="true">Activo</option><option value="false">Inactivo</option></select></label><p class="muted">Desasigna al conductor antes de desactivarlo. Sus servicios anteriores conservarán el nombre registrado al despachar.</p><button type="submit">Guardar conductor</button></form></dialog><dialog class="operational-ui" id="assignmentDialog"><form id="assignmentForm" class="dialog-form"><div class="card-heading"><h2>Asignar conductor</h2><button type="button" class="icon-button" data-close aria-label="Cerrar">×</button></div><input id="assignmentUnit" type="hidden"/><p id="assignmentInfo" class="muted"></p><label>Conductor<select id="assignmentPerson"><option value="">Sin conductor</option></select></label><p class="muted">Un conductor puede estar en una sola unidad a la vez. Para cambiarlo de vehículo, desasígnalo primero. No se permiten cambios durante un servicio activo.</p><button type="submit">Guardar asignación</button></form></dialog><script defer src="flota.js"></script><script defer src="acceso.js"></script><script defer="True" src="dashboard.js"></script></body>
+        <div class="header-right-tools">
+          <div class="trujillo-time-badge">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span id="trujilloClock">21:32:18 (Trujillo)</span>
+          </div>
+
+          <div class="notification-bell-btn" id="bellBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-badge-count" hidden>0</span>
+          </div>
+
+          <div class="top-user-avatar" id="avatarTopBtn" title="Perfil Administrador">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content Body -->
+      <div class="dashboard-content-body"><p role="status" id="dataSourceNotice">Datos operativos en memoria: incluyen registros de ejemplo y se pierden al reiniciar. Las integraciones requieren verificación.</p>
+        
+        <!-- =================================================================
+             1. SECCIÓN: PANEL PRINCIPAL (REPRODUCCIÓN EXACTA DE LA IMAGEN)
+             ================================================================= -->
+        <section class="view-section active" id="view-panel-principal">
+          
+          <!-- FILA 1: 5 TARJETAS KPI CON SPARKLINES -->
+          <div class="kpi-row-5">
+            <!-- KPI 1: Llamadas recibidas hoy -->
+            <div class="card-kpi">
+              <div class="kpi-header-line">
+                <div class="kpi-icon-pill pill-blue">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                </div>
+                <span class="kpi-card-title">Llamadas recibidas hoy</span>
+              </div>
+              <div class="kpi-body-split">
+                <div>
+                  <div class="kpi-big-number" id="kpiNumLlamadas">?</div>
+                  <div class="kpi-trend-badge">Registros del sistema</div>
+                </div>
+                <div class="kpi-sparkline-wrap">
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- KPI 2: Solicitudes activas -->
+            <div class="card-kpi">
+              <div class="kpi-header-line">
+                <div class="kpi-icon-pill pill-purple">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1"></rect>
+                  </svg>
+                </div>
+                <span class="kpi-card-title">Solicitudes activas</span>
+              </div>
+              <div class="kpi-body-split">
+                <div>
+                  <div class="kpi-big-number" id="kpiNumSolicitudes">?</div>
+                  <div class="kpi-trend-badge">Registros del sistema</div>
+                </div>
+                <div class="kpi-sparkline-wrap">
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- KPI 3: Unidades disponibles -->
+            <div class="card-kpi">
+              <div class="kpi-header-line">
+                <div class="kpi-icon-pill pill-green">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"></path>
+                    <rect x="3" y="11" width="18" height="8" rx="2"></rect>
+                    <circle cx="7.5" cy="15.5" r="1.5"></circle>
+                    <circle cx="16.5" cy="15.5" r="1.5"></circle>
+                  </svg>
+                </div>
+                <span class="kpi-card-title">Unidades disponibles</span>
+              </div>
+              <div class="kpi-body-split">
+                <div>
+                  <div class="kpi-big-number" id="kpiNumUnidades">?</div>
+                  <div class="kpi-trend-badge">Registros del sistema</div>
+                </div>
+                <div class="kpi-sparkline-wrap">
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- KPI 4: Servicios completados -->
+            <div class="card-kpi">
+              <div class="kpi-header-line">
+                <div class="kpi-icon-pill pill-teal">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <span class="kpi-card-title">Servicios completados</span>
+              </div>
+              <div class="kpi-body-split">
+                <div>
+                  <div class="kpi-big-number" id="kpiNumCompletados">?</div>
+                  <div class="kpi-trend-badge">Registros del sistema</div>
+                </div>
+                <div class="kpi-sparkline-wrap">
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- KPI 5: Ingresos del día -->
+            <div class="card-kpi">
+              <div class="kpi-header-line">
+                <div class="kpi-icon-pill pill-amber">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <ellipse cx="12" cy="5" rx="8" ry="3"></ellipse>
+                    <path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"></path>
+                    <path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"></path>
+                  </svg>
+                </div>
+                <span class="kpi-card-title">Ingresos del día</span>
+              </div>
+              <div class="kpi-body-split">
+                <div>
+                  <div class="kpi-big-number" id="kpiNumIngresos">?</div>
+                  <div class="kpi-trend-badge">Registros del sistema</div>
+                </div>
+                <div class="kpi-sparkline-wrap">
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FILA 2: 2 GRÁFICOS (DEMANDA Y SERVICIOS POR HORA) -->
+          <div class="middle-charts-row-2col">
+            
+            <!-- Gráfico 1: Demanda de servicios (Barra oscura superior idéntica a la imagen) -->
+            <div class="chart-card-box demand-card-styled">
+              <div class="chart-navy-banner">
+                <div class="chart-card-title-white">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                  </svg>
+                  <span>Demanda de servicios</span>
+                </div>
+                <div class="time-pill-tabs-navy">
+                  <button class="time-tab-navy active" id="tab7d">7 días</button>
+                  <button class="time-tab-navy" id="tab30d">30 días</button>
+                  <button class="time-tab-navy" id="tab90d">90 días</button>
+                </div>
+              </div>
+
+              <div class="demand-card-inner">
+                <!-- Legend -->
+                <div class="demand-legend-line">
+                  <div class="legend-item">
+                    <span class="legend-bullet-solid"></span>
+                    <span>Histórico</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-bullet-dashed"></span>
+                    <span>Período seleccionado</span>
+                  </div>
+                </div>
+
+                <!-- SVG Chart Line & Area -->
+                <div class="chart-svg-container"><p>Cargando registros...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gráfico 2: Servicios por hora -->
+            <div class="chart-card-box">
+              <div class="chart-card-header">
+                <div class="chart-card-title">
+                  <div class="icon-circle-blue">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1d5bd8" stroke-width="2.2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                  </div>
+                  <span>Servicios por hora</span>
+                </div>
+              </div>
+
+              <div class="chart-svg-container"><p>Cargando registros...</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- FILA 3: DISTRIBUCIÓN DE ESTADOS (IZQUIERDA) Y ÚLTIMAS SOLICITUDES CRUD (DERECHA) -->
+          <div class="bottom-tables-row-2col">
+            
+            <!-- Gráfico Donut: Distribución de estados -->
+            <div class="chart-card-box donut-card-styled">
+              <div class="chart-card-header">
+                <div class="chart-card-title">
+                  <div class="icon-circle-blue">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1d5bd8" stroke-width="2.2">
+                      <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                      <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                    </svg>
+                  </div>
+                  <span>Distribución de estados</span>
+                </div>
+              </div>
+
+              <div class="donut-chart-flex">
+                <div class="donut-svg-box"><p>Cargando registros...</p></div>
+
+                <div class="donut-legend-list"></div>
+              </div>
+            </div>
+
+            <!-- Tarjeta: Últimas solicitudes con CRUD COMPLETO PARA EL ADMINISTRADOR -->
+            <div class="table-card-box table-card-wide">
+              <div class="table-header-split">
+                <div class="chart-card-title">
+                  <div class="icon-circle-blue">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1d5bd8" stroke-width="2.2">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                  </div>
+                  <span>Últimas solicitudes</span>
+                </div>
+                <div class="header-action-links">
+                  <button class="btn-add-quick" id="btnNuevaSolicitudQuick" title="Registrar nuevo servicio (CRUD Administrador)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Nueva solicitud</span>
+                  </button>
+                  <a href="#solicitudes" class="view-all-link">Ver todas →</a>
+                </div>
+              </div>
+
+              <div style="overflow-x:auto;">
+                <table class="clean-table">
+                  <thead>
+                    <tr>
+                      <th>CÓDIGO</th>
+                      <th>PASAJERO</th>
+                      <th>ORIGEN</th>
+                      <th>DESTINO</th>
+                      <th>UNIDAD</th>
+                      <th>ESTADO</th>
+                      <th style="text-align:right;">ACCIONES</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tablaUltimasSolicitudesDashboard">
+                    <!-- Filas renderizadas dinámicamente con acciones CRUD -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- =================================================================
+             2. SECCIÓN: RECEPCIÓN DE LLAMADAS (ACS + AZURE AI VOICE)
+             ================================================================= -->
+        <section class="view-section" id="view-recepcion-llamadas">
+          <div class="module-container-card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Consola de Voz · Azure ACS + Agente de Voz</h3>
+            <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">Recepción de llamadas telefónicas y transcripción automática.</p>
+            <div style="background:#f8fafc; border:1px solid #eaedf3; border-radius:10px; padding:16px; margin-bottom:16px;" id="callTranscriptBox">
+              <div style="margin-bottom:8px;"><strong>Azure AI Voice:</strong> Buenas noches, bienvenido a la central PlatinumVIP Trujillo. ¿Cuál es su nombre y destino?</div>
+              <div style="margin-bottom:8px; color:#1d5bd8;"><strong>Cliente:</strong> Hola, soy Carlos Mendoza. Necesito una unidad en Av. Larco 450 con destino al Aeropuerto Huanchaco.</div>
+              <div><strong>Azure AI Voice:</strong> Entendido señor Mendoza. Enviamos la solicitud de inmediato por radio Zello.</div>
+            </div>
+            <button class="btn-primary-blue" onclick="simularLlamada()">Simular Nueva Llamada Entrante</button>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             3. SECCIÓN: SOLICITUDES (CRUD COMPLETO)
+             ================================================================= -->
+        <section class="view-section" id="view-solicitudes">
+          <div class="module-container-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 style="font-size:16px; font-weight:700;">Gestión de Solicitudes (CRUD Completo)</h3>
+                <p style="font-size:12px; color:var(--text-muted);">Crear, editar, consultar estado y eliminar servicios en memoria</p>
+              </div>
+              <button class="btn-primary-blue" id="btnNuevaSolicitudModal">Nueva solicitud</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="clean-table" id="tablaSolicitudesModulo">
+                <thead>
+                  <tr>
+                    <th>CÓDIGO</th>
+                    <th>PASAJERO</th>
+                    <th>TELÉFONO</th>
+                    <th>ORIGEN</th>
+                    <th>DESTINO</th>
+                    <th>UNIDAD</th>
+                    <th>ESTADO</th>
+                    <th>TARIFA</th>
+                    <th style="text-align:right;">ACCIONES</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodySolicitudesFull">
+                  <!-- Se actualiza por JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             4. SECCIÓN: CONDUCTORES Y UNIDADES (CRUD COMPLETO)
+             ================================================================= -->
+        <section class="view-section" id="view-conductores-unidades">
+          <div class="module-container-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 style="font-size:16px; font-weight:700;">Conductores y unidades</h3>
+                <p style="font-size:12px; color:var(--text-muted);">Administración de vehículos, choferes y estados operativos</p>
+              </div>
+              <button class="btn-primary-blue" id="btnNuevaUnidadModal">+ Registrar Unidad</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="clean-table">
+                <thead>
+                  <tr>
+                    <th>UNIDAD</th>
+                    <th>CONDUCTOR</th>
+                    <th>TELÉFONO</th>
+                    <th>PLACA</th>
+                    <th>VEHÍCULO</th>
+                    <th>ESTADO</th>
+                    <th style="text-align:right;">ACCIONES</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyConductores">
+                  <!-- Se actualiza por JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             5. SECCIÓN: ASIGNACIÓN DE SERVICIOS
+             ================================================================= -->
+        <section class="view-section" id="view-asignacion-servicios">
+          <div class="module-container-card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Despacho Inteligente de Unidades (Zello Radio PTT)</h3>
+            <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">Canal de comunicación directa con conductores en Trujillo.</p>
+            <div style="background:#0f172a; color:#f8fafc; border-radius:10px; padding:16px; font-family:monospace; margin-bottom:16px;">
+              <div style="color:#38bdf8; margin-bottom:6px;">[CENTRAL PLATINUM]: ¿Unidades disponibles para Av. Larco 450 hacia Aeropuerto Huanchaco?</div>
+              <div style="color:#22c55e;">[UNIDAD 12 - Carlos Paredes]: Unidad 12 disponible a 3 cuadras en La Merced.</div>
+            </div>
+            <button class="btn-primary-blue" onclick="showToast('Ejemplo visual de despacho: no se ha reservado una unidad real')">Ver ejemplo de asignación U-12</button>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             6. SECCIÓN: MAPA DE SERVICIOS
+             ================================================================= -->
+        <section class="view-section" id="view-mapa-servicios">
+          <div class="module-container-card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Mapa de referencia · Trujillo (ubicaciones de ejemplo)</h3>
+            <div id="mapContainer" style="height:480px; width:100%; border-radius:10px; border:1px solid #eaedf3;"></div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             7. SECCIÓN: PASAJEROS (CRUD COMPLETO)
+             ================================================================= -->
+        <section class="view-section" id="view-pasajeros">
+          <div class="module-container-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 style="font-size:16px; font-weight:700;">Directorio de pasajeros</h3>
+                <p style="font-size:12px; color:var(--text-muted);">Clientes corporativos, ejecutivos y particulares</p>
+              </div>
+              <button class="btn-primary-blue" id="btnNuevoPasajeroModal">+ Registrar Pasajero</button>
+            </div>
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th>NOMBRE</th>
+                  <th>TELÉFONO</th>
+                  <th>TIPO</th>
+                  <th>SERVICIOS REGISTRADOS</th>
+                  <th>NOTAS</th>
+                  <th style="text-align:right;">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyPasajeros">
+                <!-- Se actualiza por JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             8. SECCIÓN: HISTORIAL Y REPORTES
+             ================================================================= -->
+        <section class="view-section" id="view-historial-reportes">
+          <div class="module-container-card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">Reporte y Registro Histórico</h3>
+            <button class="btn-secondary-white" onclick="showToast('Exportando reporte a formato CSV...')">Exportar a CSV</button>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             9. SECCIÓN: ANÁLISIS PREDICTIVO
+             ================================================================= -->
+        <section class="view-section" id="view-analisis-predictivo">
+          <div class="module-container-card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Análisis Predictivo de Demanda con Azure AI</h3>
+            <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">Predicción de zonas calientes y picos de servicios en Trujillo.</p>
+            <div style="padding:16px; background:#eff6ff; border-radius:10px; color:#1d5bd8; font-weight:600;">
+              Zona recomendada de guardia: Av. Larco con Av. España (demanda esperada +34% a las 18:00h).
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             10. SECCIÓN: USUARIOS Y ROLES (CRUD)
+             ================================================================= -->
+        <section class="view-section" id="view-usuarios-roles">
+          <div class="module-container-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 style="font-size:16px; font-weight:700;">Personal y Cuentas de Acceso (CRUD)</h3>
+                <p style="font-size:12px; color:var(--text-muted);">Administradores, supervisores y operadores de turno</p>
+              </div>
+              <button class="btn-primary-blue" id="btnNuevoUsuarioModal">+ Agregar Usuario</button>
+            </div>
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th>NOMBRE</th>
+                  <th>CORREO</th>
+                  <th>ROL</th>
+                  <th>ESTADO</th>
+                  <th style="text-align:right;">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyUsuarios">
+                <!-- Se actualiza por JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             11. SECCIÓN: CONFIGURACIONES
+             ================================================================= -->
+        <section class="view-section" id="view-configuraciones">
+          <div class="module-container-card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">Configuración de Conexiones e Integraciones</h3>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px;">
+              <div style="padding:14px; background:#f8fafc; border:1px solid #eaedf3; border-radius:8px;">
+                <strong>1. Microsoft Foundry</strong>
+                <p style="font-size:12px; color:var(--text-muted);">gpt-4o-realtime-voice · Por verificar</p>
+              </div>
+              <div style="padding:14px; background:#f8fafc; border:1px solid #eaedf3; border-radius:8px;">
+                <strong>2. Azure ACS</strong>
+                <p style="font-size:12px; color:var(--text-muted);">+51 44 600 780 · Por verificar</p>
+              </div>
+              <div style="padding:14px; background:#f8fafc; border:1px solid #eaedf3; border-radius:8px;">
+                <strong>3. n8n Engine</strong>
+                <p style="font-size:12px; color:var(--text-muted);">/webhook/platinum-despacho · Por verificar</p>
+              </div>
+              <div style="padding:14px; background:#f8fafc; border:1px solid #eaedf3; border-radius:8px;">
+                <strong>4. PostgreSQL</strong>
+                <p style="font-size:12px; color:var(--text-muted);">localhost:5432 / DB: platinum · Por verificar</p>
+              </div>
+              <div style="padding:14px; background:#f8fafc; border:1px solid #eaedf3; border-radius:8px;">
+                <strong>5. Zello PTT</strong>
+                <p style="font-size:12px; color:var(--text-muted);">#taxistas-platinum · Por verificar</p>
+              </div>
+              <div style="padding:14px; background:#f8fafc; border:1px solid #eaedf3; border-radius:8px;">
+                <strong>6. WhatsApp Cloud API</strong>
+                <p style="font-size:12px; color:var(--text-muted);">+51 944 800 900 · Por verificar</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             12. SECCIÓN: AUDITORÍA DEL SISTEMA
+             ================================================================= -->
+        <section class="view-section" id="view-auditoria-sistema">
+          <div class="module-container-card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">Registro de eventos en memoria</h3>
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th>FECHA/HORA</th>
+                  <th>USUARIO</th>
+                  <th>MÓDULO</th>
+                  <th>ACCIÓN</th>
+                  <th>ESTADO</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyAuditoria">
+                <!-- Se actualiza por JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =====================================================================
+       MODALES CRUD (CREAR, EDITAR, DETALLE)
+       ===================================================================== -->
+  
+  <!-- MODAL: CREAR NUEVA SOLICITUD (CREATE) -->
+  <div class="modal-overlay" id="modalNuevaSolicitud">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size:16px; font-weight:700;">Nueva Solicitud de Servicio (CRUD - Crear)</h3>
+        <button class="btn-secondary-white" style="padding:2px 8px;" id="btnCloseSolModal">&times;</button>
+      </div>
+      <form id="formCrearSolicitud">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Nombre del Pasajero</label>
+            <input type="text" class="form-input" id="solNombre" required placeholder="Ej. Carlos Mendoza Ruiz"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-input" id="solTelefono" required placeholder="+51 944 821 302"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Punto de Recojo (Trujillo)</label>
+            <input type="text" class="form-input" id="solOrigen" required placeholder="Ej. Av. Larco 450, Urb. La Merced"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Destino</label>
+            <input type="text" class="form-input" id="solDestino" required placeholder="Ej. Centro Histórico / Aeropuerto"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unidad Asignada</label>
+            <select class="form-select" id="solUnidad">
+              <option value="U-12">U-12 (Carlos Paredes)</option>
+              <option value="U-07">U-07 (Manuel Silva)</option>
+              <option value="U-15">U-15 (Roberto Alarcón)</option>
+              <option value="U-03">U-03 (Jorge Ramos)</option>
+              <option value="U-11">U-11 (Luis Valderrama)</option>
+              <option value="U-24">U-24 (Fernando Bazán)</option>
+              <option value="U-18">U-18 (Víctor Cáceres)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado Inicial</label>
+            <select class="form-select" id="solEstado">
+              <option value="Solicitado">Solicitado</option><option value="Asignado">Asignado</option>
+              <option value="En curso">En curso</option>
+              <option value="Completado">Completado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tarifa (PEN S/)</label>
+            <input type="number" step="0.5" class="form-input" id="solTarifa" value="25.00" required/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary-white" id="btnCancelSol">Cancelar</button>
+          <button type="submit" class="btn-primary-blue">Guardar en Base de Datos</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR SOLICITUD (UPDATE) -->
+  <div class="modal-overlay" id="modalEditarSolicitud">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size:16px; font-weight:700;">Editar Solicitud (CRUD - Actualizar)</h3>
+        <button class="btn-secondary-white" style="padding:2px 8px;" id="btnCloseEditSolModal">&times;</button>
+      </div>
+      <form id="formEditarSolicitud">
+        <input type="hidden" id="editSolId"/>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Código</label>
+            <input type="text" class="form-input" id="editSolCodigo" readonly style="background:#f1f5f9;"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre del Pasajero</label>
+            <input type="text" class="form-input" id="editSolNombre" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Punto de Recojo</label>
+            <input type="text" class="form-input" id="editSolOrigen" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Destino</label>
+            <input type="text" class="form-input" id="editSolDestino" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unidad Asignada</label>
+            <select class="form-select" id="editSolUnidad">
+              <option value="U-12">U-12</option>
+              <option value="U-07">U-07</option>
+              <option value="U-15">U-15</option>
+              <option value="U-03">U-03</option>
+              <option value="U-11">U-11</option>
+              <option value="U-24">U-24</option>
+              <option value="U-18">U-18</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-select" id="editSolEstado">
+              <option value="Solicitado">Solicitado</option><option value="Asignado">Asignado</option>
+              <option value="En curso">En curso</option>
+              <option value="Completado">Completado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tarifa (S/)</label>
+            <input type="number" step="0.5" class="form-input" id="editSolTarifa" required/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary-white" id="btnCancelEditSol">Cancelar</button>
+          <button type="submit" class="btn-primary-blue">Actualizar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR UNIDAD (CREATE) -->
+  <div class="modal-overlay" id="modalRegistrarUnidad">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size:16px; font-weight:700;">Registrar Unidad y Conductor (CRUD)</h3>
+        <button class="btn-secondary-white" style="padding:2px 8px;" id="btnCloseUnitModal">&times;</button>
+      </div>
+      <form id="formCrearUnidad">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Código (Ej: U-28)</label>
+            <input type="text" class="form-input" id="newUnitCodigo" required placeholder="U-28"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre del Chofer</label>
+            <input type="text" class="form-input" id="newUnitChofer" required placeholder="Jorge Ramos"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono Móvil</label>
+            <input type="text" class="form-input" id="newUnitTelefono" required placeholder="+51 944 000 000"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Placa</label>
+            <input type="text" class="form-input" id="newUnitPlaca" required placeholder="T4B-291"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vehículo</label>
+            <input type="text" class="form-input" id="newUnitVehiculo" required placeholder="Toyota Corolla Blanco 2024"/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary-white" id="btnCancelUnit">Cancelar</button>
+          <button type="submit" class="btn-primary-blue">Guardar Unidad</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-notice" id="toastNotice">
+    <span id="toastMsg">Notificación</span>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- Dashboard JS -->
+  <script src="presentacion-analitica.js?v=20261102-flujo3"></script><script src="operativo-charts.js?v=20261102-flujo3"></script><script src="dashboard.js?v=20261102-flujo3"></script><script src="modulos-operativos.js?v=20261102-flujo3"></script><script src="flujo-operativo.js?v=20261102-flujo3"></script>
+</body>
 </html>

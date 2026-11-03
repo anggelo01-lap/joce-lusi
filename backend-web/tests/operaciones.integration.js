@@ -13,7 +13,7 @@ async function run() {
   process.env.POSTGRES_DB=database;
   delete process.env.ZELLO_API_URL;delete process.env.ZELLO_API_TOKEN;
   pool=load('/app/backend-web/src/db/pool');
-  await pool.query(fs.readFileSync('/app/backend-web/src/db/base.sql','utf8'));
+  await pool.query(fs.readFileSync('/app/database/init.sql','utf8'));
   await pool.query("INSERT INTO conductores(codigo,nombre,telefono,placa,vehiculo,categoria) VALUES('LEGACY','Conductor anterior','999','LEG-001','Auto','sedan')");
   const migration=fs.readFileSync('/app/backend-web/src/db/operaciones.sql','utf8');
   await pool.query(migration);await pool.query(migration);

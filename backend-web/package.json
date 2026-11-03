@@ -2,14 +2,16 @@
   "name": "operadora-ia-platinum-backend",
   "version": "1.0.0",
   "private": true,
-  "scripts": {"start":"node src/server.js","dev":"node --watch src/server.js"},
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
   "dependencies": {
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "pg": "^8.13.1",
-    "swagger-ui-express": "^5.0.1",
-    "twilio": "^5.4.0"
+    "swagger-ui-express": "^5.0.1"
   }
 }

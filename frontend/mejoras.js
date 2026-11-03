@@ -1,5 +1,5 @@
 'use strict';
-/* Mejoras de interacción: Panel general, Flujo de trabajo y Consola Orión.
+/* Mejoras de interacción: Panel general, Flujo de trabajo y Operadora IA.
    Usa los helpers globales de dashboard.js ($, api, state, toast, badge, money, dateTime, escapeHTML, transitions). */
 const Mejoras = (() => {
   const esc = v => escapeHTML(v);
@@ -9,7 +9,7 @@ const Mejoras = (() => {
   const EMPTY_HINT = { SOLICITADO: 'Sin pedidos por asignar', ASIGNADO: 'Arrastra aquí un pedido con unidad', EN_RECOJO: 'Nadie en camino al recojo', EN_CURSO: 'Sin viajes en curso', COMPLETADO: 'Aún no hay completados', CANCELADO: 'Sin cancelaciones' };
   const STEPS = ['SOLICITADO', 'ASIGNADO', 'EN_RECOJO', 'EN_CURSO', 'COMPLETADO'];
   const TERMINAL_LIMIT = 6;
-  const M = { busy: false, dragId: null, stats: null, summary: null, calls: [], selectedCall: null, chat: { datos: {}, sending: false }, ficha: {} };
+  const M = { busy: false, dragId: null, stats: null, summary: null, calls: [], selectedCall: null };
 
   const age = iso => {
     const m = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
@@ -86,7 +86,7 @@ const Mejoras = (() => {
     enhanceKpis(summary);
     hourChart(summary);
     api('/estadisticas').then(s => { M.stats = s; renderStats(); }).catch(() => { $('statsGrid').innerHTML = empty('No se pudieron cargar las estadísticas.'); });
-    renderFicha();
+
   }
 
   /* =============== FLUJO DE TRABAJO =============== */
@@ -180,71 +180,12 @@ const Mejoras = (() => {
     });
   }
 
-  /* =============== CONSOLA ORIÓN =============== */
-  function bubble(role, text, speak) {
-    const d = document.createElement('div'); d.className = `bubble ${role}`;
-    const span = document.createElement('span'); span.textContent = text; d.append(span);
-    if (speak) { const b = document.createElement('button'); b.type = 'button'; b.className = 'bubble-voice'; b.title = 'Escuchar con la voz de Orión'; b.textContent = '🔊'; b.onclick = () => speakText(text, b); d.append(b); }
-    $('chat').append(d); $('chat').scrollTop = $('chat').scrollHeight; return d;
-  }
-  async function speakText(texto, btn) {
-    btn.disabled = true;
-    try {
-      const r = await fetch('/api/orion/voz', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': Acceso.csrf }, body: JSON.stringify({ texto }) });
-      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'No se pudo generar la voz.');
-      const url = URL.createObjectURL(await r.blob()), a = new Audio(url); a.onended = () => URL.revokeObjectURL(url); await a.play();
-    } catch (e) { toast(e.message); } finally { btn.disabled = false; }
-  }
-  function resetChat() {
-    M.chat.datos = {}; $('chat').innerHTML = ''; bubble('assistant', 'Hola, soy Orión. Cuéntame el pedido: ¿desde dónde recogemos al cliente y a dónde va? Puedes escribirlo como lo diría el cliente.');
-    renderFicha(); quick();
-  }
-  function quick() {
-    const d = M.chat.datos, opts = [];
-    if (!d.origen && !d.destino) opts.push('Desde Plaza de Armas hasta el aeropuerto', 'Necesito un taxi');
-    else if (!d.destino) opts.push('Destino aeropuerto', 'Destino Huanchaco');
-    else if (!d.origen) opts.push('Recojo en Plaza de Armas');
-    if (!d.categoria) opts.push('Necesito una van', 'Necesito una SUV');
-    $('quickReplies').innerHTML = opts.slice(0, 4).map(o => `<button class="chip" type="button" data-q="${esc(o)}">${esc(o)}</button>`).join('');
-  }
-  async function sendChat(texto) {
-    if (M.chat.sending || !texto.trim()) return; M.chat.sending = true; $('chatSend').disabled = true;
-    bubble('user', texto); $('chatText').value = '';
-    const typing = bubble('assistant typing', 'Orión está escribiendo…');
-    try {
-      const r = await api('/orion/chat', { method: 'POST', body: JSON.stringify({ texto, datos: M.chat.datos }) });
-      typing.remove(); bubble('assistant', r.respuesta || 'Sin respuesta.', true);
-      if (r.datos) { M.chat.datos = r.datos; renderFicha(true); }
-      quick();
-    } catch (e) { typing.remove(); bubble('assistant error', e.message); $('orionStatus').textContent = 'Sin conexión'; }
-    finally { M.chat.sending = false; $('chatSend').disabled = false; $('chatText').focus(); }
-  }
-  function renderFicha(fromChat) {
-    if (!$('fNombre')) return;
-    const d = M.chat.datos, map = { fNombre: 'nombre', fTelefono: 'telefono', fOrigen: 'origen', fDestino: 'destino', fCategoria: 'categoria' };
-    if (fromChat) Object.entries(map).forEach(([id, k]) => { if (d[k] != null && document.activeElement !== $(id)) $(id).value = d[k]; });
-    const need = ['fTelefono', 'fOrigen', 'fDestino'], filled = need.filter(id => $(id).value.trim()).length + ($('fNombre').value.trim() ? 1 : 0);
-    $('fichaProgress').textContent = `${filled}/4`; $('fichaBar').style.width = `${filled * 25}%`;
-    $('fichaCreate').disabled = filled < 3 || !need.every(id => $(id).value.trim());
-    const cat = $('fCategoria').value, free = state.drivers.filter(x => x.categoria === cat && x.estado === 'DISPONIBLE').length;
-    $('fichaUnits').textContent = state.drivers.length ? (free ? `✔ ${free} unidad(es) ${cat} disponible(s) para asignar.` : `⚠ No hay unidades ${cat} disponibles ahora; el pedido quedará en “Solicitado”.`) : 'Registra unidades para poder asignarlas.';
-  }
-  async function createFromFicha() {
-    const body = { nombre: $('fNombre').value.trim() || 'Cliente', telefono: $('fTelefono').value.trim(), origen: $('fOrigen').value.trim(), destino: $('fDestino').value.trim(), categoria: $('fCategoria').value };
-    $('fichaCreate').disabled = true;
-    try {
-      const r = await api('/servicios', { method: 'POST', body: JSON.stringify(body) });
-      toast(r.zello.enviado ? 'Servicio registrado y aviso enviado.' : 'Servicio registrado. Asígnale una unidad desde el flujo de trabajo.');
-      resetChat(); ['fNombre', 'fTelefono', 'fOrigen', 'fDestino'].forEach(id => $(id).value = ''); await sync(); location.hash = 'flujo-trabajo';
-    } catch (e) { toast(e.message); renderFicha(); }
-  }
-
   /* ---- llamadas ---- */
-  const parseTranscript = t => String(t || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => { const m = l.match(/^(CLIENTE|ORION|ORIÓN):\s*(.*)$/i); return m ? { rol: m[1].toUpperCase().startsWith('CLI') ? 'usuario' : 'asistente', contenido: m[2] } : { rol: 'asistente', contenido: l }; });
+  const parseTranscript = t => String(t || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => { const m = l.match(/^(CLIENTE|IA|AZURE):\s*(.*)$/i); return m ? { rol: m[1].toUpperCase().startsWith('CLI') ? 'usuario' : 'asistente', contenido: m[2] } : { rol: 'asistente', contenido: l }; });
   function renderCalls() {
     const q = $('callSearch').value.toLocaleLowerCase('es'), st = $('callStatus').value;
     const list = M.calls.filter(c => (!st || c.estado === st) && [c.cliente, c.telefono_origen].some(v => String(v || '').toLocaleLowerCase('es').includes(q)));
-    $('calls').innerHTML = list.map(c => `<button class="call-row${M.selectedCall === c.id ? ' sel' : ''}" data-call="${c.id}" type="button"><span><strong>${esc(c.cliente || c.telefono_origen || 'Desconocido')}</strong><small>${esc(c.telefono_origen || '')}</small></span><span class="call-meta">${badge(c.estado)}<small>${dateTime(c.inicio)}</small></span></button>`).join('') || empty(M.calls.length ? 'Ninguna llamada coincide con la búsqueda.' : 'Aún no hay llamadas registradas. Aparecerán aquí cuando Twilio reciba llamadas.');
+    $('calls').innerHTML = list.map(c => `<button class="call-row${M.selectedCall === c.id ? ' sel' : ''}" data-call="${c.id}" type="button"><span><strong>${esc(c.cliente || c.telefono_origen || 'Desconocido')}</strong><small>${esc(c.telefono_origen || '')}</small></span><span class="call-meta">${badge(c.estado)}<small>${dateTime(c.inicio)}</small></span></button>`).join('') || empty(M.calls.length ? 'Ninguna llamada coincide con la búsqueda.' : 'Aún no hay llamadas registradas. Aparecerán aquí cuando el agente Azure envíe sus registros.');
   }
   async function showCall(id) {
     M.selectedCall = Number(id); renderCalls();
@@ -256,6 +197,17 @@ const Mejoras = (() => {
       <div class="chat call-chat">${msgs.length ? msgs.map(m => `<div class="bubble ${m.rol === 'usuario' ? 'user' : 'assistant'}">${esc(m.contenido)}</div>`).join('') : '<div class="empty">Sin transcripción registrada.</div>'}</div>
       <div class="call-actions"><button data-call-service="${c.id}" type="button">Crear servicio con estos datos</button>${c.telefono_origen ? `<a class="btn-link" href="tel:${esc(c.telefono_origen)}">📞 Devolver llamada</a>` : ''}</div>`;
   }
+  async function loadAutomation() {
+    try {
+      const [connections,jobs]=await Promise.all([api('/conexiones'),api('/automatizaciones')]);
+      $('aiConnections').innerHTML=connections.map(c=>`<p><strong>${esc(c.nombre)}</strong> ${badge(c.estado)}<small>${esc(c.detalle)}</small></p>`).join('');
+      $('automationList').innerHTML=jobs.map(j=>`<p>Servicio #${j.servicio_id} · ${esc(j.tipo)} ${badge(j.estado)}</p>`).join('') || empty('Sin automatizaciones registradas.');
+      const active=M.calls.find(c=>!c.fin);
+      $('activeCall').innerHTML=active?`<h3>Llamada en curso</h3><p>${esc(active.cliente || active.telefono_origen)} · ${dateTime(active.inicio)} ${badge(active.estado)}</p><button data-call="${active.id}" type="button">Ver conversación</button>`:empty('Sin llamadas en curso.');
+      $('activeCall').onclick=e=>{const b=e.target.closest('[data-call]');if(b)showCall(b.dataset.call);};
+      if(M.selectedCall)await showCall(M.selectedCall);
+    } catch(e){$('automationList').innerHTML=empty(e.message);}
+  }
   async function loadCalls() {
     try {
       M.calls = await api('/llamadas');
@@ -263,19 +215,12 @@ const Mejoras = (() => {
       $('callStatus').innerHTML = '<option value="">Todos los estados</option>' + estados.map(e => `<option>${esc(e)}</option>`).join(''); $('callStatus').value = cur;
       renderCalls();
     } catch (e) { $('calls').innerHTML = empty(e.message); }
-    api('/conexiones').then(list => { const o = list.find(x => x.nombre === 'Orión'); $('orionStatus').textContent = o && o.estado === 'operativo' ? '● Orión en línea' : '● Orión sin conexión'; $('orionStatus').className = 'tag ' + (o && o.estado === 'operativo' ? 'tag-ok' : 'tag-bad'); }).catch(() => {});
-    renderFicha();
+    await loadAutomation();
+
   }
 
   function bindConsole() {
-    $('chatForm').addEventListener('submit', e => { e.preventDefault(); sendChat($('chatText').value); });
-    $('chatReset').onclick = resetChat;
-    $('quickReplies').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (b) sendChat(b.dataset.q); });
-    ['fNombre', 'fTelefono', 'fOrigen', 'fDestino', 'fCategoria'].forEach(id => $(id).addEventListener('input', () => {
-      const k = { fNombre: 'nombre', fTelefono: 'telefono', fOrigen: 'origen', fDestino: 'destino', fCategoria: 'categoria' }[id];
-      M.chat.datos[k] = $(id).value.trim(); renderFicha(); quick();
-    }));
-    $('fichaCreate').onclick = createFromFicha;
+    $('retryAutomation').onclick=async()=>{try{await api('/automatizaciones/procesar',{method:'POST',body:'{}'});await loadAutomation();}catch(e){toast(e.message);}};
     $('callSearch').oninput = renderCalls; $('callStatus').onchange = renderCalls;
     $('calls').addEventListener('click', e => { const b = e.target.closest('[data-call]'); if (b) showCall(b.dataset.call); });
     $('callDetail').addEventListener('click', e => {
@@ -284,16 +229,11 @@ const Mejoras = (() => {
       if (f && c) { if (f.elements.nombre) f.elements.nombre.value = c.cliente && c.cliente !== 'Cliente telefónico' ? c.cliente : ''; if (f.elements.telefono) f.elements.telefono.value = c.telefono_origen || ''; }
       $('serviceDialog').showModal();
     });
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SR) {
-      $('chatMic').hidden = false;
-      $('chatMic').onclick = () => { const r = new SR(); r.lang = 'es-PE'; r.onresult = ev => { $('chatText').value = ev.results[0][0].transcript; $('chatText').focus(); }; r.onerror = () => toast('No se pudo usar el micrófono.'); r.start(); toast('Escuchando… habla ahora.'); };
-    }
   }
 
   /* =============== ARRANQUE =============== */
   function init() {
-    bindWorkflow(); bindConsole(); resetChat();
+    bindWorkflow(); bindConsole();
     document.addEventListener('click', e => {
       const a = e.target.closest('[data-attn]'); if (a) M.attentionActions[Number(a.dataset.attn)]?.();
       const bar = e.target.closest('[data-bar]'); if (bar) goto('despacho-flujo', bar.dataset.bar);

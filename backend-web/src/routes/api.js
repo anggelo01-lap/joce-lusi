@@ -1,7 +1,6 @@
 const express = require('express');
 const { randomUUID } = require('crypto');
 const pool = require('../db/pool');
-const { notificarServicio } = require('../services/zello.service');
 const router = express.Router();
 const wrap = fn => (req,res,next) => Promise.resolve(fn(req,res)).catch(next);
 router.get('/health', async (_req,res) => {
@@ -23,18 +22,17 @@ router.post('/servicios', wrap(async (req,res) => {
   const db = await pool.connect(); let service;
   try {
     await db.query('BEGIN');
+    if(req.body.external_request_id) {
+      if(typeof req.body.external_request_id!=='string' || req.body.external_request_id.length>150) throw Object.assign(new Error('external_request_id inválido.'),{status:400});
+      await db.query('SELECT pg_advisory_xact_lock(hashtext($1))',[req.body.external_request_id]);
+      const previous=(await db.query('SELECT * FROM servicios WHERE external_request_id=$1',[req.body.external_request_id])).rows[0];
+      if(previous){await db.query('COMMIT');return res.json({...previous,zello:{enviado:false,modo:'automatizacion-pendiente'},duplicado:true});}
+    }
     const client = await db.query(`INSERT INTO clientes(nombre,telefono) VALUES($1,$2) ON CONFLICT(telefono) DO UPDATE SET nombre=EXCLUDED.nombre RETURNING id`,[nombre.trim(),telefono.trim()]);
     const codigo = `SRV-${randomUUID().replace(/-/g,'').slice(0,24).toUpperCase()}`;
-    service = (await db.query(`INSERT INTO servicios(codigo,cliente_id,origen,destino,categoria) VALUES($1,$2,$3,$4,$5) RETURNING *`,[codigo,client.rows[0].id,origen.trim(),destino.trim(),categoria])).rows[0];
+    service = (await db.query(`INSERT INTO servicios(codigo,cliente_id,origen,destino,categoria,external_request_id) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`,[codigo,client.rows[0].id,origen.trim(),destino.trim(),categoria,req.body.external_request_id || null])).rows[0];
     await db.query('COMMIT');
   } catch(error) { await db.query('ROLLBACK'); throw error; } finally { db.release(); }
-  let aviso;
-  try { aviso = await notificarServicio(service); }
-  catch (_) { aviso = {enviado:false,modo:'error-proveedor',channel:process.env.ZELLO_CHANNEL || 'taxistas-platinum',mensaje:`Nuevo servicio ${service.codigo}: ${service.origen} -> ${service.destino}`}; }
-  let registroNotificacion = true;
-  try {
-    await pool.query(`INSERT INTO notificaciones_zello(servicio_id,canal,mensaje,estado,respuesta) VALUES($1,$2,$3,$4,$5)`,[service.id,aviso.channel,aviso.mensaje,aviso.enviado?'ENVIADO':'PENDIENTE',JSON.stringify(aviso.respuesta || aviso.modo)]);
-  } catch (_) { registroNotificacion = false; }
-  res.status(201).json({...service,zello:{enviado:aviso.enviado,modo:aviso.modo,registro:registroNotificacion}});
+  res.status(201).json({...service,zello:{enviado:false,modo:'automatizacion-pendiente',registro:true}});
 }));
 module.exports = router;

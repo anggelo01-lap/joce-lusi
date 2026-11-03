@@ -109,3 +109,5 @@ __pycache__/
 postgres_data/
 audio_cache/
 .DS_Store
+
+.migration-backup/
