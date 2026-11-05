@@ -24,7 +24,7 @@ function opBindEdits() {
   document.querySelectorAll('[data-op-edit]').forEach(b=>b.onclick=()=>abrirModalEditarSolicitud(Number(b.dataset.opEdit)));
 }
 async function renderWorkflowModules() {
-  const outcomes=await Promise.allSettled([api('/centro/llamadas'),api('/centro/disponibilidad')]);
+  const outcomes=await Promise.allSettled([api('/centro/llamadas').catch(async error=>{if(error.status!==404)throw error;const calls=await api('/llamadas');return calls.map(c=>({...c,solicitudes:appState.servicios.filter(s=>s.llamada_id===c.id)}));}),api('/centro/disponibilidad')]);
   operationalWorkflow.calls=outcomes[0].status==='fulfilled'?outcomes[0].value:[];
   operationalWorkflow.responses=outcomes[1].status==='fulfilled'?outcomes[1].value:[];
   renderCallsWorkflow(outcomes[0].status==='rejected');renderRequestsWorkflow();renderDispatchWorkflow(outcomes[1].status==='rejected');renderReportsWorkflow();renderPassengersWorkflow();renderServiceMap();
@@ -51,6 +51,7 @@ function renderDriverAvailability() {
   const section=$('view-conductores-unidades');
   let box=$('driverAvailability');if(!box){box=document.createElement('div');box.id='driverAvailability';section.append(box);}
   box.className='module-container-card';
+  if(appState.loadErrors?.pasajeros){box.textContent='El historial de pasajeros no está disponible en esta versión del backend.';return;}
   box.innerHTML='<h3>Disponibilidad reportada por Zello</h3><p>Respuestas registradas por el operador; el estado de una unidad no sustituye una respuesta para un servicio específico.</p>'+opGrid(['Unidad','Conductor','Contacto','Canal','Última respuesta','Fecha'],appState.conductores.map(d=>{
     const response=operationalWorkflow.responses.filter(r=>r.conductor_id===d.id).at(-1);
     return [opCell(d.codigo),opCell(d.nombre),opCell(d.telefono),opCell(d.canal_zello || 'Sin canal'),opCell(response?(response.disponible?'Disponible':'No disponible'):'Sin respuesta registrada'),opCell(opDate(response?.creado_en))];
@@ -92,6 +93,7 @@ function exportWorkflowRows(rows) {
 }
 function renderPassengersWorkflow() {
   let box=$('passengerHistory');if(!box){box=document.createElement('div');box.id='passengerHistory';$('view-pasajeros').append(box);}box.className='module-container-card';
+  if(appState.loadErrors?.pasajeros){box.textContent='El historial de pasajeros no está disponible en esta versión del backend.';return;}
   box.innerHTML=`<h3>Historial de pasajeros</h3><p>Consulta llamadas, servicios anteriores, destinos y conductores asignados.</p><div class="op-toolbar"><input id="passengerHistorySearch" class="form-input" type="search" placeholder="Buscar nombre o teléfono" aria-label="Buscar pasajero"></div><div id="passengerHistoryList"></div><div id="passengerHistoryDetail"></div>`;
   const render=()=>{
     const term=$('passengerHistorySearch').value.toLowerCase();$('passengerHistoryList').innerHTML=appState.pasajeros.filter(p=>`${p.nombre} ${p.telefono}`.toLowerCase().includes(term)).map(p=>`<button class="btn-secondary-white" data-passenger-history="${Number(p.id)}">${opEsc(p.nombre)} · ${opEsc(p.telefono)}</button>`).join('')||'<p>Sin coincidencias.</p>';

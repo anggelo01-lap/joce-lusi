@@ -47,7 +47,9 @@ async function api(url, options = {}) {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
+      const error = new Error(err.error || `HTTP ${res.status}`);
+      error.status = res.status;
+      throw error;
     }
     return await res.json();
   } catch (error) {
@@ -478,7 +480,7 @@ function renderUsuariosCRUD() {
 window.eliminarUsuario = async (id) => {
   if (!confirm('¿Eliminar esta cuenta de usuario?')) return;
   try {
-    await api(`/usuarios/${id}`, { method: 'DELETE' });
+    await api(`/acceso/usuarios/${id}`, { method: 'DELETE' });
     appState.usuarios = appState.usuarios.filter(u => u.id !== id);
     renderUsuariosCRUD();
     showToast('Usuario eliminado');
@@ -492,13 +494,10 @@ window.eliminarUsuario = async (id) => {
 // ============================================================================
 async function initApp() {
   try {
-    const [servicios, conductores, pasajeros, usuarios, resumen] = await Promise.all([
-      api('/servicios'),
-      api('/conductores'),
-      api('/pasajeros'),
-      api('/usuarios'),
-      api('/resumen')
-    ]);
+    const {data,errors}=await loadDashboardData(api);
+    const {servicios,conductores,pasajeros,usuarios,resumen,health}=data;
+    appState.loadErrors=errors;
+    appState.source=health?.postgres_activo===true || health?.database===true || health?.database==='PostgreSQL' ? 'PostgreSQL' : (resumen?.fuente==='memoria' ? 'memoria' : 'backend');
 
     appState.servicios = servicios;
     appState.conductores = conductores;
@@ -524,8 +523,15 @@ async function initApp() {
     await renderWorkflowModules();
     if (appState.activeView === 'mapa-servicios') ensureServiceMap();
     const notice = $('dataSourceNotice');
-    if (notice) notice.textContent = 'Datos en memoria: incluyen registros de ejemplo y se pierden al reiniciar. Actualizado: ' + new Date(resumen.actualizado_en).toLocaleTimeString('es-PE', {timeZone:'America/Lima'});
+    const statusLabel=document.querySelector('.status-online-line span:last-child');
+    if(statusLabel)statusLabel.textContent=appState.source==='PostgreSQL'?'PostgreSQL conectado':appState.source==='memoria'?'Datos en memoria':'Conectado al backend';
+    const unavailable=Object.keys(errors);
+    if(notice)notice.textContent=(appState.source==='memoria'?'Datos de ejemplo en memoria. ':'Datos del servidor. ')+(unavailable.length?'No se pudieron cargar: '+unavailable.join(', ')+'. Los demás módulos siguen disponibles.':'Actualizado: '+new Date().toLocaleTimeString('es-PE',{timeZone:'America/Lima'}));
+    if(errors.resumen)document.querySelectorAll('.kpi-big-number').forEach(el=>el.textContent='\u2014');
+    if(errors.pasajeros){const table=$('tbodyPasajeros');if(table)table.innerHTML='<tr><td colspan="6">El backend instalado no ofrece el directorio de pasajeros. No se han cargado registros.</td></tr>';}
+
   } catch (err) {
+    if(err.status===401){location.replace('/');return;}
     showToast('No se pudieron cargar los datos: ' + err.message);
     $('dataSourceNotice').textContent = 'Error de carga. Recarga la página para volver a intentar.';
     document.querySelectorAll('.kpi-big-number').forEach(el => el.textContent = '—');
@@ -553,7 +559,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   api('/acceso/yo').then(session => {
     window.dashboardCsrf = session.csrf;
+    appState.session=session;
+    document.querySelector('.user-session-state').textContent=session.usuario.email;
+    document.querySelector('.user-avatar-badge').textContent=session.usuario.nombre.split(/\s+/).map(n=>n[0]).slice(0,2).join('').toUpperCase();
     document.querySelector('.user-display-name').textContent = session.usuario.nombre;
     return initApp();
-  }).catch(error => showToast(error.message));
+  }).catch(error => {if(error.status===401)location.replace('/');else showToast(error.message);});
 });

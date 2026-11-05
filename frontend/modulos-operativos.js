@@ -41,12 +41,12 @@ function registerOperationalControls() {
   };
   for (const [id, endpoint, fields] of [
     ['btnNuevoPasajeroModal','/pasajeros',['nombre','telefono']],
-    ['btnNuevoUsuarioModal','/usuarios',['nombre','email']]
+    ['btnNuevoUsuarioModal','/acceso/usuarios',['nombre','email','password']]
   ]) document.getElementById(id).onclick=()=>{
     const dialog=document.createElement('dialog');
-    dialog.innerHTML=`<form><h3>${endpoint === '/pasajeros' ? 'Registrar pasajero' : 'Registrar personal de demostración'}</h3>${endpoint === '/usuarios' ? '<p>Este directorio en memoria no crea credenciales de inicio de sesión.</p>' : ''}${fields.map(field=>`<label>${field}<input class="form-input" name="${field}" type="${field==='email'?'email':'text'}" required maxlength="120"></label>`).join('')}<button type="submit" class="btn-primary-blue">Guardar</button><button type="button">Cancelar</button><p role="alert"></p></form>`;
+    dialog.innerHTML=`<form><h3>${endpoint === '/pasajeros' ? 'Registrar pasajero' : 'Crear cuenta de acceso'}</h3>${endpoint === '/acceso/usuarios' ? '<p>Crea una cuenta con correo y contraseña propios. La sesión actual no cambia.</p>' : ''}${fields.map(field=>`<label>${field}<input class="form-input" name="${field}" type="${field==='email'?'email':field==='password'?'password':'text'}" required ${field==='password'?'minlength="12" autocomplete="new-password"':''} maxlength="128"></label>`).join('')}<button type="submit" class="btn-primary-blue">Guardar</button><button type="button">Cancelar</button><p role="alert"></p></form>`;
     document.body.append(dialog);dialog.querySelector('[type=button]').onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();
-    dialog.querySelector('form').onsubmit=async event=>{event.preventDefault();const button=dialog.querySelector('[type=submit]');button.disabled=true;try{await api(endpoint,{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(event.target)))});dialog.close();await initApp();}catch(error){dialog.querySelector('[role=alert]').textContent=error.message;button.disabled=false;}};
+    dialog.querySelector('form').onsubmit=async event=>{event.preventDefault();const button=dialog.querySelector('[type=submit]');button.disabled=true;try{await api(endpoint,{method:'POST',body:JSON.stringify({...Object.fromEntries(new FormData(event.target)),...(endpoint==='/acceso/usuarios'?{rol:appState.session?.usuario.rol==='superadmin'?'admin':'usuario'}:{})})});dialog.close();await initApp();}catch(error){dialog.querySelector('[role=alert]').textContent=error.message;button.disabled=false;}};
     dialog.showModal();
   };
   document.getElementById('avatarTopBtn').onclick=()=>switchView('usuarios-roles');
